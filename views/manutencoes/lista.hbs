@@ -1,0 +1,35 @@
+{{!< ../layout}}
+<div class="cabecalho-lista">
+  <div>
+    <h1 class="titulo-pagina">Manutenções</h1>
+    <p class="apoio">Todos os serviços, do mais recente para o mais antigo.</p>
+  </div>
+  <a class="botao" href="/manutencoes/nova">Registrar manutenção</a>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Serviço</th>
+      <th>Veículo</th>
+      <th>Data</th>
+      <th class="num">Km</th>
+      <th class="num">Custo</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each manutencoes}}
+      <tr>
+        <td><a href="/manutencoes/{{this.id}}">{{this.tipo}}</a></td>
+        <td>{{this.veiculo.apelido}}</td>
+        <td>{{data this.data}}</td>
+        <td class="num">{{numero this.km}}</td>
+        <td class="num">{{moeda this.custo}}</td>
+        <td><span class="status status-{{statusClasse this.status}}">{{this.status}}</span></td>
+      </tr>
+    {{else}}
+      <tr><td colspan="6" class="vazio">Nenhuma manutenção registrada. Comece registrando a primeira.</td></tr>
+    {{/each}}
+  </tbody>
+</table>

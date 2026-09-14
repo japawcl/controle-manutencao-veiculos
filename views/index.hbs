@@ -1,0 +1,49 @@
+{{!< layout}}
+<h1 class="titulo-pagina">Painel</h1>
+<p class="apoio">Resumo dos serviços registrados nos seus veículos.</p>
+
+<section class="numeros">
+  <div class="numero">
+    <span class="numero-valor">{{totalVeiculos}}</span>
+    <span class="numero-rotulo">veículos cadastrados</span>
+  </div>
+  <div class="numero">
+    <span class="numero-valor">{{totalManutencoes}}</span>
+    <span class="numero-rotulo">manutenções registradas</span>
+  </div>
+  <div class="numero">
+    <span class="numero-valor">{{agendadas}}</span>
+    <span class="numero-rotulo">agendadas</span>
+  </div>
+  <div class="numero destaque">
+    <span class="numero-valor">{{moeda gastoTotal}}</span>
+    <span class="numero-rotulo">gasto acumulado</span>
+  </div>
+</section>
+
+<section class="bloco">
+  <h2>Últimos serviços</h2>
+  <ul class="lista-simples">
+    {{#each ultimas}}
+      <li>
+        <a href="/manutencoes/{{this.id}}">{{this.tipo}}</a>
+        <span class="meta">{{this.veiculo.apelido}} - {{data this.data}} - {{moeda this.custo}}</span>
+      </li>
+    {{else}}
+      <li class="vazio">Nenhum serviço registrado ainda.</li>
+    {{/each}}
+  </ul>
+  <a class="botao" href="/manutencoes/nova">Registrar manutenção</a>
+</section>
+
+<section class="bloco">
+  <h2>Quilometragem atual</h2>
+  <ul class="odometros">
+    {{#each veiculos}}
+      <li>
+        <span class="odometro-nome">{{this.apelido}}</span>
+        <span class="odometro-km">{{numero this.kmAtual}} km</span>
+      </li>
+    {{/each}}
+  </ul>
+</section>

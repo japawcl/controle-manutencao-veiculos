@@ -1,0 +1,28 @@
+{{!< ../layout}}
+<h1 class="titulo-pagina">Veículos</h1>
+<p class="apoio">Quilometragem atual e quanto já foi gasto com cada um.</p>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Apelido</th>
+      <th>Modelo</th>
+      <th>Placa</th>
+      <th class="num">Km atual</th>
+      <th class="num">Serviços</th>
+      <th class="num">Gasto</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each veiculos}}
+      <tr>
+        <td>{{this.apelido}}</td>
+        <td>{{this.marca}} {{this.modelo}} {{this.ano}}</td>
+        <td class="num">{{this.placa}}</td>
+        <td class="num">{{numero this.kmAtual}}</td>
+        <td class="num">{{this.totalManutencoes}}</td>
+        <td class="num">{{moeda this.gastoTotal}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

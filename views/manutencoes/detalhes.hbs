@@ -1,0 +1,41 @@
+{{!< ../layout}}
+<a class="voltar" href="/manutencoes">Voltar para a lista</a>
+
+<h1 class="titulo-pagina">{{manutencao.tipo}}</h1>
+<span class="status status-{{statusClasse manutencao.status}}">{{manutencao.status}}</span>
+
+<div class="ficha">
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Veículo</span>
+    <span class="ficha-valor">{{veiculo.apelido}}</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Modelo</span>
+    <span class="ficha-valor">{{veiculo.marca}} {{veiculo.modelo}} {{veiculo.ano}}</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Placa</span>
+    <span class="ficha-valor">{{veiculo.placa}}</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Data do serviço</span>
+    <span class="ficha-valor">{{data manutencao.data}}</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Quilometragem</span>
+    <span class="ficha-valor num">{{numero manutencao.km}} km</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Custo</span>
+    <span class="ficha-valor num">{{moeda manutencao.custo}}</span>
+  </div>
+  <div class="ficha-item">
+    <span class="ficha-rotulo">Oficina</span>
+    <span class="ficha-valor">{{manutencao.oficina}}</span>
+  </div>
+</div>
+
+<div class="bloco">
+  <h2>Descrição</h2>
+  <p>{{manutencao.descricao}}</p>
+</div>

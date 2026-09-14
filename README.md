@@ -2,11 +2,12 @@
 
 Sistema web para registrar e acompanhar as manutenções feitas em veículos: qual serviço foi executado, em qual veículo, com que quilometragem, em qual oficina e quanto custou.
 
-## Integrante
+## Integrantes
 
 - Guilherme Wanderley
+- Petrus Yedo
 
-> Trabalho realizado individualmente, com a stack em TypeScript autorizada pelo professor no lugar de Java/Spring Boot. A estrutura segue o mesmo padrão MVC pedido no enunciado: Controllers recebem as requisições, um Service guarda os dados em memória e o Model é enviado para os templates.
+> Trabalho realizado com a stack em TypeScript autorizada pelo professor no lugar de Java/Spring Boot. A estrutura segue o mesmo padrão MVC pedido no enunciado: Controllers recebem as requisições, um Service guarda os dados em memória e o Model é enviado para os templates.
 
 ## Tecnologias
 

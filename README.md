@@ -108,11 +108,16 @@ Ao salvar, a quilometragem do veículo é atualizada automaticamente se o valor 
 
 | Spring Boot | Este projeto |
 |---|---|
+| `pom.xml` | `package.json` |
 | `@Controller` | `@Controller()` |
 | `@GetMapping("/rota")` | `@Get('rota')` |
 | `model.addAttribute(...)` | objeto retornado pelo método + `@Render()` |
 | `src/main/resources/templates` | `views/` |
 | `src/main/resources/static` | `public/` |
+| `http://localhost:8080` | `http://localhost:3000` |
 | `th:each` | `{{#each}}` |
 | `th:text` | `{{variavel}}` |
+| `th:href="@{/rota}"` | `href="/rota"` |
+| `th:action="@{/rota}"` | `action="/rota"` |
+| `redirect:/rota` | `@Redirect('/rota')` |
 | `@Service` | `@Injectable()` |

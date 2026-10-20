@@ -38,23 +38,12 @@ export class ManutencoesService {
     });
   }
 
-  async gastoTotal(): Promise<number> {
-    const linha = await this.manutencoesRepository
-      .createQueryBuilder('manutencao')
-      .select('COALESCE(SUM(manutencao.custo), 0)', 'total')
-      .getRawOne<{ total: string }>();
-
-    return Number(linha?.total ?? 0);
+  gastoTotal(): Promise<number> {
+    return this.manutencoesRepository.somarCustos();
   }
 
-  async gastoPorVeiculo(veiculoId: number): Promise<number> {
-    const linha = await this.manutencoesRepository
-      .createQueryBuilder('manutencao')
-      .select('COALESCE(SUM(manutencao.custo), 0)', 'total')
-      .where('manutencao.id_veiculo = :veiculoId', { veiculoId })
-      .getRawOne<{ total: string }>();
-
-    return Number(linha?.total ?? 0);
+  gastoPorVeiculo(veiculoId: number): Promise<number> {
+    return this.manutencoesRepository.somarCustosPorVeiculo(veiculoId);
   }
 
   contarPorVeiculo(veiculoId: number): Promise<number> {

@@ -40,23 +40,34 @@ export class PecasController {
       corpo,
     );
 
-    if (!temErros && (await this.pecasService.existeComNome(dados.nome.trim()))) {
-      erros.nome = 'Já existe uma peça com esse nome.';
+    if (temErros) {
+      return this.devolverFormulario(resposta, corpo, erros);
     }
 
-    if (Object.keys(erros).length > 0) {
-      return resposta.status(200).render('pecas/lista', {
-        titulo: 'Peças',
-        pagina: 'pecas',
-        pecas: await this.pecasService.listarTodas(),
-        peca: corpo,
-        erros,
+    const resultado = await this.pecasService.cadastrar(dados);
+
+    if (!resultado.ok) {
+      return this.devolverFormulario(resposta, corpo, {
+        nome: resultado.motivo,
       });
     }
 
-    await this.pecasService.cadastrar(dados);
     definirMensagem(requisicao, 'sucesso', 'Peça cadastrada com sucesso!');
 
     return resposta.redirect(302, '/pecas');
+  }
+
+  private async devolverFormulario(
+    resposta: Response,
+    peca: Record<string, unknown>,
+    erros: Record<string, string>,
+  ) {
+    return resposta.status(200).render('pecas/lista', {
+      titulo: 'Peças',
+      pagina: 'pecas',
+      pecas: await this.pecasService.listarTodas(),
+      peca,
+      erros,
+    });
   }
 }

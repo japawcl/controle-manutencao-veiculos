@@ -4,6 +4,10 @@ import { PecasRepository } from './pecas.repository';
 import { Peca } from './peca.entity';
 import { SalvarPecaDto } from './dto/salvar-peca.dto';
 
+export type ResultadoCadastroPeca =
+  | { ok: true; peca: Peca }
+  | { ok: false; motivo: string };
+
 @Injectable()
 export class PecasService {
   constructor(private readonly pecasRepository: PecasRepository) {}
@@ -20,13 +24,18 @@ export class PecasService {
     return this.pecasRepository.find({ where: { id: In(ids) } });
   }
 
-  async existeComNome(nome: string): Promise<boolean> {
-    const quantidade = await this.pecasRepository.countBy({ nome });
-    return quantidade > 0;
-  }
+  async cadastrar(dados: SalvarPecaDto): Promise<ResultadoCadastroPeca> {
+    const nome = dados.nome.trim();
+    const repetidas = await this.pecasRepository.countBy({ nome });
 
-  async cadastrar(dados: SalvarPecaDto): Promise<Peca> {
-    const peca = this.pecasRepository.create({ nome: dados.nome.trim() });
-    return this.pecasRepository.save(peca);
+    if (repetidas > 0) {
+      return { ok: false, motivo: 'Já existe uma peça com esse nome.' };
+    }
+
+    const peca = await this.pecasRepository.save(
+      this.pecasRepository.create({ nome }),
+    );
+
+    return { ok: true, peca };
   }
 }

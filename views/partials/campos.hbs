@@ -1,0 +1,67 @@
+<label>
+  Veículo
+  <select name="veiculoId" class="{{#if erros.veiculoId}}campo-erro{{/if}}">
+    <option value="">Selecione um veículo</option>
+    {{#each veiculos}}
+      <option value="{{this.id}}" {{#if (eq @root.manutencao.veiculoId this.id)}}selected{{/if}}>
+        {{this.apelido}} ({{this.modelo}})
+      </option>
+    {{/each}}
+  </select>
+  {{#if erros.veiculoId}}<span class="mensagem-erro">{{erros.veiculoId}}</span>{{/if}}
+</label>
+
+<label>
+  Tipo de serviço
+  <input type="text" name="tipo" placeholder="Troca de óleo" value="{{manutencao.tipo}}"
+    class="{{#if erros.tipo}}campo-erro{{/if}}">
+  {{#if erros.tipo}}<span class="mensagem-erro">{{erros.tipo}}</span>{{/if}}
+</label>
+
+<label class="largo">
+  Descrição
+  <textarea name="descricao" rows="3" placeholder="O que foi feito ou precisa ser feito"
+    class="{{#if erros.descricao}}campo-erro{{/if}}">{{manutencao.descricao}}</textarea>
+  {{#if erros.descricao}}<span class="mensagem-erro">{{erros.descricao}}</span>{{/if}}
+</label>
+
+<label>
+  Oficina
+  <input type="text" name="oficina" placeholder="Nome da oficina" value="{{manutencao.oficina}}"
+    class="{{#if erros.oficina}}campo-erro{{/if}}">
+  {{#if erros.oficina}}<span class="mensagem-erro">{{erros.oficina}}</span>{{/if}}
+</label>
+
+<label>
+  Data
+  <input type="date" name="data" value="{{manutencao.data}}"
+    class="{{#if erros.data}}campo-erro{{/if}}">
+  {{#if erros.data}}<span class="mensagem-erro">{{erros.data}}</span>{{/if}}
+</label>
+
+<label>
+  Quilometragem
+  <input type="number" name="km" min="0" placeholder="68000" value="{{manutencao.km}}"
+    class="{{#if erros.km}}campo-erro{{/if}}">
+  {{#if erros.km}}<span class="mensagem-erro">{{erros.km}}</span>{{/if}}
+</label>
+
+<label>
+  Custo (R$)
+  <input type="number" name="custo" min="0" step="0.01" placeholder="320.00" value="{{manutencao.custo}}"
+    class="{{#if erros.custo}}campo-erro{{/if}}">
+  {{#if erros.custo}}<span class="mensagem-erro">{{erros.custo}}</span>{{/if}}
+</label>
+
+<fieldset class="largo caixa-pecas">
+  <legend>Peças utilizadas</legend>
+  <div class="pecas-grade">
+    {{#each pecas}}
+      <label class="peca-item">
+        <input type="checkbox" name="pecas" value="{{this.id}}"
+          {{#if (contem @root.pecasSelecionadas this.id)}}checked{{/if}}>
+        <span>{{this.nome}}</span>
+      </label>
+    {{/each}}
+  </div>
+</fieldset>

@@ -1,0 +1,24 @@
+{{!< ../layout}}
+<a class="voltar" href="/manutencoes">Voltar para a lista</a>
+
+<h1 class="titulo-pagina">Editar manutenção</h1>
+<p class="apoio">Alterando o registro número {{manutencao.id}}.</p>
+
+<form class="formulario" method="POST" action="/manutencoes/{{manutencao.id}}/editar">
+  {{> campos}}
+
+  <label>
+    Status
+    <select name="status" class="{{#if erros.status}}campo-erro{{/if}}">
+      {{#each statusPossiveis}}
+        <option value="{{this}}" {{#if (eq @root.manutencao.status this)}}selected{{/if}}>{{this}}</option>
+      {{/each}}
+    </select>
+    {{#if erros.status}}<span class="mensagem-erro">{{erros.status}}</span>{{/if}}
+  </label>
+
+  <div class="acoes">
+    <button type="submit" class="botao">Salvar alterações</button>
+    <a class="link-secundario" href="/manutencoes">Cancelar</a>
+  </div>
+</form>

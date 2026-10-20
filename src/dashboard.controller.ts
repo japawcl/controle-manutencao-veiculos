@@ -11,21 +11,19 @@ export class DashboardController {
 
   @Get()
   @Render('index')
-  index() {
-    const manutencoes = this.manutencoesService.listar();
+  async index() {
+    const manutencoes = await this.manutencoesService.listarTodas();
+    const veiculos = await this.veiculosService.listarTodos();
 
     return {
       titulo: 'Painel',
       pagina: 'painel',
-      totalVeiculos: this.veiculosService.listar().length,
-      totalManutencoes: manutencoes.length,
-      gastoTotal: this.manutencoesService.gastoTotal(),
-      agendadas: this.manutencoesService.contarPorStatus('Agendada'),
-      ultimas: manutencoes.slice(0, 3).map((manutencao) => ({
-        ...manutencao,
-        veiculo: this.veiculosService.buscarPorId(manutencao.veiculoId),
-      })),
-      veiculos: this.veiculosService.listar(),
+      totalVeiculos: veiculos.length,
+      totalManutencoes: await this.manutencoesService.contarTodas(),
+      gastoTotal: await this.manutencoesService.gastoTotal(),
+      agendadas: await this.manutencoesService.contarPorStatus('Agendada'),
+      ultimas: manutencoes.slice(0, 3),
+      veiculos,
     };
   }
 }

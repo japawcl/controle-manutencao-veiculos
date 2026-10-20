@@ -1,0 +1,34 @@
+{{!< ../layout}}
+<h1 class="titulo-pagina">Peças</h1>
+<p class="apoio">O catálogo usado para marcar o que foi trocado em cada manutenção.</p>
+
+<div class="bloco">
+  <h2>Nova peça</h2>
+  <form class="formulario-linha" method="POST" action="/pecas">
+    <div class="campo-linha">
+      <input type="text" name="nome" placeholder="Correia dentada" value="{{peca.nome}}"
+        class="{{#if erros.nome}}campo-erro{{/if}}">
+      {{#if erros.nome}}<span class="mensagem-erro">{{erros.nome}}</span>{{/if}}
+    </div>
+    <button type="submit" class="botao">Adicionar</button>
+  </form>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th class="num">ID</th>
+      <th>Nome</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each pecas}}
+      <tr>
+        <td class="num">{{this.id}}</td>
+        <td>{{this.nome}}</td>
+      </tr>
+    {{else}}
+      <tr><td colspan="2" class="vazio">Nenhuma peça cadastrada.</td></tr>
+    {{/each}}
+  </tbody>
+</table>

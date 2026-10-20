@@ -223,3 +223,86 @@ a:focus-visible {
   .titulo-pagina { font-size: 23px; }
   .tabela th, .tabela td { padding: 9px 10px; font-size: 14px; }
 }
+
+.alerta {
+  padding: 11px 14px;
+  border: 1px solid;
+  margin: 0 0 22px;
+  font-size: 15px;
+}
+.alerta-sucesso { color: #2f6b45; border-color: #a9cdb7; background: #eef7f1; }
+.alerta-erro { color: #8c2f2f; border-color: #dcadad; background: #fbeeee; }
+
+.campo-erro { border-color: #c0392b; }
+.mensagem-erro { color: #c0392b; font-size: 13px; }
+
+.acoes-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.acoes-linha form { margin: 0; }
+
+.link-perigo {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: #c0392b;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.caixa-pecas {
+  border: 1px solid var(--linha);
+  padding: 14px 16px;
+  margin: 0;
+}
+.caixa-pecas legend { font-size: 13px; color: var(--aco); padding: 0 6px; }
+.pecas-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 8px 16px;
+}
+.peca-item {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: var(--tinta);
+  font-size: 15px;
+}
+.peca-item input { width: auto; }
+
+.formulario-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+}
+.formulario-linha select,
+.formulario-linha input {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid #c8cdd2;
+  background: var(--branco);
+  color: var(--tinta);
+}
+.campo-linha { display: flex; flex-direction: column; gap: 4px; }
+
+.etiquetas {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.etiqueta {
+  border: 1px solid var(--linha);
+  background: var(--papel);
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 14px;
+}

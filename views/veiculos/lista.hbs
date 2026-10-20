@@ -1,10 +1,16 @@
 {{!< ../layout}}
-<h1 class="titulo-pagina">Veículos</h1>
-<p class="apoio">Quilometragem atual e quanto já foi gasto com cada um.</p>
+<div class="cabecalho-lista">
+  <div>
+    <h1 class="titulo-pagina">Veículos</h1>
+    <p class="apoio">Quilometragem atual e quanto já foi gasto com cada um.</p>
+  </div>
+  <a class="botao" href="/veiculos/novo">Cadastrar veículo</a>
+</div>
 
 <table class="tabela">
   <thead>
     <tr>
+      <th class="num">ID</th>
       <th>Apelido</th>
       <th>Modelo</th>
       <th>Placa</th>
@@ -16,6 +22,7 @@
   <tbody>
     {{#each veiculos}}
       <tr>
+        <td class="num">{{this.id}}</td>
         <td>{{this.apelido}}</td>
         <td>{{this.marca}} {{this.modelo}} {{this.ano}}</td>
         <td class="num">{{this.placa}}</td>
@@ -23,6 +30,8 @@
         <td class="num">{{this.totalManutencoes}}</td>
         <td class="num">{{moeda this.gastoTotal}}</td>
       </tr>
+    {{else}}
+      <tr><td colspan="7" class="vazio">Nenhum veículo cadastrado.</td></tr>
     {{/each}}
   </tbody>
 </table>

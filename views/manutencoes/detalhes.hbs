@@ -1,21 +1,36 @@
 {{!< ../layout}}
 <a class="voltar" href="/manutencoes">Voltar para a lista</a>
 
-<h1 class="titulo-pagina">{{manutencao.tipo}}</h1>
-<span class="status status-{{statusClasse manutencao.status}}">{{manutencao.status}}</span>
+<div class="cabecalho-lista">
+  <div>
+    <h1 class="titulo-pagina">{{manutencao.tipo}}</h1>
+    <span class="status status-{{statusClasse manutencao.status}}">{{manutencao.status}}</span>
+  </div>
+  <div class="acoes-linha">
+    <a class="botao" href="/manutencoes/{{manutencao.id}}/editar">Editar</a>
+    <form method="POST" action="/manutencoes/{{manutencao.id}}/excluir"
+      onsubmit="return confirm('Deseja excluir esta manutenção?')">
+      <button type="submit" class="link-perigo">Excluir</button>
+    </form>
+  </div>
+</div>
 
 <div class="ficha">
   <div class="ficha-item">
+    <span class="ficha-rotulo">Registro</span>
+    <span class="ficha-valor num">{{manutencao.id}}</span>
+  </div>
+  <div class="ficha-item">
     <span class="ficha-rotulo">Veículo</span>
-    <span class="ficha-valor">{{veiculo.apelido}}</span>
+    <span class="ficha-valor">{{manutencao.veiculo.apelido}}</span>
   </div>
   <div class="ficha-item">
     <span class="ficha-rotulo">Modelo</span>
-    <span class="ficha-valor">{{veiculo.marca}} {{veiculo.modelo}} {{veiculo.ano}}</span>
+    <span class="ficha-valor">{{manutencao.veiculo.marca}} {{manutencao.veiculo.modelo}} {{manutencao.veiculo.ano}}</span>
   </div>
   <div class="ficha-item">
     <span class="ficha-rotulo">Placa</span>
-    <span class="ficha-valor">{{veiculo.placa}}</span>
+    <span class="ficha-valor">{{manutencao.veiculo.placa}}</span>
   </div>
   <div class="ficha-item">
     <span class="ficha-rotulo">Data do serviço</span>
@@ -31,11 +46,37 @@
   </div>
   <div class="ficha-item">
     <span class="ficha-rotulo">Oficina</span>
-    <span class="ficha-valor">{{manutencao.oficina}}</span>
+    <span class="ficha-valor">{{#if manutencao.oficina}}{{manutencao.oficina}}{{else}}-{{/if}}</span>
   </div>
 </div>
 
 <div class="bloco">
   <h2>Descrição</h2>
-  <p>{{manutencao.descricao}}</p>
+  <p>{{#if manutencao.descricao}}{{manutencao.descricao}}{{else}}Sem descrição.{{/if}}</p>
+</div>
+
+<div class="bloco">
+  <h2>Peças utilizadas</h2>
+  {{#if manutencao.pecas.length}}
+    <ul class="etiquetas">
+      {{#each manutencao.pecas}}
+        <li class="etiqueta">{{this.nome}}</li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p class="vazio">Nenhuma peça associada a este serviço.</p>
+  {{/if}}
+</div>
+
+<div class="bloco">
+  <h2>Alterar status</h2>
+  <form class="formulario-linha" method="POST" action="/manutencoes/{{manutencao.id}}/status">
+    <select name="status">
+      {{#each statusPossiveis}}
+        <option value="{{this}}" {{#if (eq @root.manutencao.status this)}}selected{{/if}}>{{this}}</option>
+      {{/each}}
+    </select>
+    <button type="submit" class="botao">Aplicar</button>
+  </form>
+  <p class="apoio">Um serviço já concluído não pode voltar para agendado.</p>
 </div>

@@ -10,26 +10,37 @@
 <table class="tabela">
   <thead>
     <tr>
+      <th class="num">ID</th>
       <th>Serviço</th>
       <th>Veículo</th>
       <th>Data</th>
       <th class="num">Km</th>
       <th class="num">Custo</th>
       <th>Status</th>
+      <th>Ações</th>
     </tr>
   </thead>
   <tbody>
     {{#each manutencoes}}
       <tr>
+        <td class="num">{{this.id}}</td>
         <td><a href="/manutencoes/{{this.id}}">{{this.tipo}}</a></td>
         <td>{{this.veiculo.apelido}}</td>
         <td>{{data this.data}}</td>
         <td class="num">{{numero this.km}}</td>
         <td class="num">{{moeda this.custo}}</td>
         <td><span class="status status-{{statusClasse this.status}}">{{this.status}}</span></td>
+        <td class="acoes-linha">
+          <a href="/manutencoes/{{this.id}}">Ver</a>
+          <a href="/manutencoes/{{this.id}}/editar">Editar</a>
+          <form method="POST" action="/manutencoes/{{this.id}}/excluir"
+            onsubmit="return confirm('Deseja excluir esta manutenção?')">
+            <button type="submit" class="link-perigo">Excluir</button>
+          </form>
+        </td>
       </tr>
     {{else}}
-      <tr><td colspan="6" class="vazio">Nenhuma manutenção registrada. Comece registrando a primeira.</td></tr>
+      <tr><td colspan="8" class="vazio">Nenhuma manutenção registrada. Comece registrando a primeira.</td></tr>
     {{/each}}
   </tbody>
 </table>

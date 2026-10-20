@@ -1,50 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { Veiculo } from './veiculo.model';
+import { VeiculosRepository } from './veiculos.repository';
+import { Veiculo } from './veiculo.entity';
+import { SalvarVeiculoDto } from './dto/salvar-veiculo.dto';
 
 @Injectable()
 export class VeiculosService {
-  private readonly veiculos: Veiculo[] = [
-    {
-      id: 1,
-      apelido: 'Carro da família',
-      marca: 'Fiat',
-      modelo: 'Argo Drive 1.0',
-      placa: 'QWA-3F42',
-      ano: 2021,
-      kmAtual: 68420,
-    },
-    {
-      id: 2,
-      apelido: 'Moto do trabalho',
-      marca: 'Honda',
-      modelo: 'CG 160 Titan',
-      placa: 'PBX-7J18',
-      ano: 2019,
-      kmAtual: 41230,
-    },
-    {
-      id: 3,
-      apelido: 'Carro antigo',
-      marca: 'Volkswagen',
-      modelo: 'Gol G5 1.0',
-      placa: 'MZT-9C07',
-      ano: 2012,
-      kmAtual: 187650,
-    },
-  ];
+  constructor(private readonly veiculosRepository: VeiculosRepository) {}
 
-  listar(): Veiculo[] {
-    return this.veiculos;
+  listarTodos(): Promise<Veiculo[]> {
+    return this.veiculosRepository.find({ order: { apelido: 'ASC' } });
   }
 
-  buscarPorId(id: number): Veiculo | undefined {
-    return this.veiculos.find((veiculo) => veiculo.id === id);
+  buscarPorId(id: number): Promise<Veiculo | null> {
+    return this.veiculosRepository.findOneBy({ id });
   }
 
-  atualizarKm(id: number, km: number): void {
-    const veiculo = this.buscarPorId(id);
+  async cadastrar(dados: SalvarVeiculoDto): Promise<Veiculo> {
+    const veiculo = this.veiculosRepository.create({
+      ...dados,
+      placa: dados.placa.toUpperCase(),
+    });
+
+    return this.veiculosRepository.save(veiculo);
+  }
+
+  async atualizarKm(id: number, km: number): Promise<void> {
+    const veiculo = await this.buscarPorId(id);
+
     if (veiculo && km > veiculo.kmAtual) {
       veiculo.kmAtual = km;
+      await this.veiculosRepository.save(veiculo);
     }
   }
 }

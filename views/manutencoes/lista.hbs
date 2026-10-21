@@ -1,3 +1,4 @@
+<section aria-label="Manutencoes">
 {{!< ../layout}}
 <div class="cabecalho-lista">
   <div>
@@ -34,7 +35,7 @@
           <a href="/manutencoes/{{this.id}}">Ver</a>
           <a href="/manutencoes/{{this.id}}/editar">Editar</a>
           <form method="POST" action="/manutencoes/{{this.id}}/excluir"
-            onsubmit="return confirm('Deseja excluir esta manutenção?')">
+            data-confirmar="Deseja excluir esta manutenção?">
             <button type="submit" class="link-perigo">Excluir</button>
           </form>
         </td>
@@ -44,3 +45,5 @@
     {{/each}}
   </tbody>
 </table>
+
+</section>

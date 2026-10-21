@@ -2,8 +2,8 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('veiculos')
 export class Veiculo {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id: string;
 
   @Column({ length: 60 })
   apelido: string;

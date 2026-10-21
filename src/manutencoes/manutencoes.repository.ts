@@ -16,7 +16,7 @@ export class ManutencoesRepository extends Repository<Manutencao> {
     return Number(linha?.total ?? 0);
   }
 
-  async somarCustosPorVeiculo(veiculoId: number): Promise<number> {
+  async somarCustosPorVeiculo(veiculoId: string | number): Promise<number> {
     const linha = await this.createQueryBuilder('manutencao')
       .select('COALESCE(SUM(manutencao.custo), 0)', 'total')
       .where('manutencao.id_veiculo = :veiculoId', { veiculoId })

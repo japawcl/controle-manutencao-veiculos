@@ -1,13 +1,15 @@
+<section aria-label="Pecas">
 {{!< ../layout}}
 <h1 class="titulo-pagina">Peças</h1>
 <p class="apoio">O catálogo usado para marcar o que foi trocado em cada manutenção.</p>
 
 <div class="bloco">
   <h2>Nova peça</h2>
-  <form class="formulario-linha" method="POST" action="/pecas">
+  <form data-validar class="formulario-linha" method="POST" action="/pecas">
     <div class="campo-linha">
-      <input type="text" name="nome" placeholder="Correia dentada" value="{{peca.nome}}"
-        class="{{#if erros.nome}}campo-erro{{/if}}">
+      <label for="nome">Nome da peça</label>
+      <input type="text" id="nome" name="nome" placeholder="Correia dentada" value="{{peca.nome}}"
+        class="{{#if erros.nome}}campo-erro{{/if}}" required maxlength="80" minlength="2">
       {{#if erros.nome}}<span class="mensagem-erro">{{erros.nome}}</span>{{/if}}
     </div>
     <button type="submit" class="botao">Adicionar</button>
@@ -19,16 +21,20 @@
     <tr>
       <th class="num">ID</th>
       <th>Nome</th>
+      <th>Ações</th>
     </tr>
   </thead>
   <tbody>
     {{#each pecas}}
       <tr>
         <td class="num">{{this.id}}</td>
-        <td>{{this.nome}}</td>
+        <td>{{this.nome}}</td><td><a href="/pecas/{{this.id}}">Ver</a> <a href="/pecas/{{this.id}}/editar">Editar</a>
+<form method="post" action="/pecas/{{this.id}}/excluir" data-confirmar="Deseja excluir este registro? Os vínculos existentes serão preservados bloqueando a exclusão."><button class="link-perigo" type="submit">Excluir</button></form></td>
       </tr>
     {{else}}
-      <tr><td colspan="2" class="vazio">Nenhuma peça cadastrada.</td></tr>
+      <tr><td colspan="3" class="vazio">Nenhuma peça cadastrada.</td></tr>
     {{/each}}
   </tbody>
 </table>
+
+</section>

@@ -1,5 +1,7 @@
 import {
   Body,
+  Param,
+  ParseIntPipe,
   Controller,
   Get,
   Post,
@@ -69,5 +71,45 @@ export class PecasController {
       peca,
       erros,
     });
+  }
+
+  @Get(':id')
+  async detalhes(@Param('id', ParseIntPipe) id: number, @Req() requisicao: Request, @Res() resposta: Response) {
+    const registro = await this.pecasService.buscarPorId(id);
+    if (!registro) {
+      definirMensagem(requisicao, 'erro', 'Peça não encontrada.');
+      return resposta.redirect(302, '/pecas');
+    }
+    return resposta.render('pecas/detalhes', { titulo: 'Detalhes', pagina: 'pecas', peca: registro,  });
+  }
+
+  @Get(':id/editar')
+  async editar(@Param('id', ParseIntPipe) id: number, @Req() requisicao: Request, @Res() resposta: Response) {
+    const registro = await this.pecasService.buscarPorId(id);
+    if (!registro) {
+      definirMensagem(requisicao, 'erro', 'Peça não encontrada.');
+      return resposta.redirect(302, '/pecas');
+    }
+    return resposta.render('pecas/editar', { titulo: 'Editar Peça', pagina: 'pecas', peca: registro, erros: {} });
+  }
+
+  @Post(':id/editar')
+  async atualizar(@Param('id', ParseIntPipe) id: number, @Body() corpo: Record<string, unknown>, @Req() requisicao: Request, @Res() resposta: Response) {
+    const { dados, erros, temErros } = await validarFormulario(SalvarPecaDto, corpo);
+    const motivo = temErros ? null : await this.pecasService.atualizar(id, dados);
+    if (temErros || motivo) {
+      return resposta.status(200).render('pecas/editar', {
+        titulo: 'Editar Peça', pagina: 'pecas', peca: { ...corpo, id }, erros, erro: motivo,
+      });
+    }
+    definirMensagem(requisicao, 'sucesso', 'Peça atualizada com sucesso!');
+    return resposta.redirect(302, '/pecas');
+  }
+
+  @Post(':id/excluir')
+  async excluir(@Param('id', ParseIntPipe) id: number, @Req() requisicao: Request, @Res() resposta: Response) {
+    const motivo = await this.pecasService.excluir(id);
+    definirMensagem(requisicao, motivo ? 'erro' : 'sucesso', motivo ?? 'Peça excluída com sucesso!');
+    return resposta.redirect(302, '/pecas');
   }
 }

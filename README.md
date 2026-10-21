@@ -23,7 +23,7 @@ Sistema web para registrar e acompanhar as manutenções feitas em veículos: qu
 
 ## Como executar
 
-Pré-requisitos: Node.js 18 ou superior e PostgreSQL rodando.
+Pré-requisitos: Node.js 22 ou superior (recomendado: 24 LTS) e PostgreSQL rodando.
 
 **1. Criar o banco**
 
@@ -47,7 +47,7 @@ SESSAO_SEGREDO=troque-este-valor
 **3. Instalar e rodar**
 
 ```bash
-npm install
+npm ci
 npm run start:dev
 ```
 
@@ -249,15 +249,44 @@ npm run migration:revert
 | `@Service` | `@Injectable()` |
 | JPA / Hibernate | TypeORM |
 | `@Entity` / `@Table(name=...)` | `@Entity('tabela')` |
-| `@Id @GeneratedValue(IDENTITY)` | `@PrimaryGeneratedColumn()` |
+| `@Id @GeneratedValue(IDENTITY)` | `@PrimaryGeneratedColumn({ type: 'bigint' })` |
 | `@Column(nullable = false)` | `@Column({ nullable: false })` |
 | `@ManyToOne` + `@JoinColumn` | `@ManyToOne` + `@JoinColumn` |
 | `@ManyToMany` + `@JoinTable` | `@ManyToMany` + `@JoinTable` |
 | `JpaRepository<Chamado, Long>` | classe que herda `Repository<Manutencao>` |
 | `save()` / `findAll()` / `findById()` / `deleteById()` | `save()` / `find()` / `findOne()` / `delete()` |
 | `Optional<Chamado>` | `Manutencao` ou `null` |
-| Bean Validation (`@NotBlank`, `@Size`) | class-validator (`@IsNotEmpty`, `@Length`) |
+| Bean Validation (`@NotBlank`, `@Size`) | class-validator (`@IsNotEmpty`, `@Length`) com normalização dos textos |
 | `@Valid` + `BindingResult` | `validarFormulario()` (`src/comum/validacao.ts`) |
 | Flyway (`V1__create.sql`) | migrations do TypeORM em `src/banco/migrations` |
-| `spring.jpa.hibernate.ddl-auto=validate` | `synchronize: false` |
+| Controle de schema | `synchronize: false` impede sincronização; `npm run schema:check` confere explicitamente a estrutura |
 | `http://localhost:8080` | `http://localhost:3000` |
+
+
+## Segunda prova: cobertura das aulas
+
+A evolução está detalhada em [docs/segunda-prova.md](docs/segunda-prova.md), com os conceitos das aulas 1 a 16, localização no código e roteiro de apresentação.
+
+- CRUD de manutenções, veículos e peças, incluindo detalhes e edição.
+- Exclusão de veículos e peças em uso é bloqueada para preservar o histórico.
+- Validação HTML, JavaScript externo e backend; textos em branco e números vazios são rejeitados.
+- Confirmação de exclusão por evento no JS externo; contador de caracteres e filtro de tabela.
+- Validação dos status e dos identificadores das peças; formulário preservado em falhas.
+- IDs BIGINT são representados como strings nas entidades para manter a precisão do driver.
+- Migration V6 acrescenta constraints e ajusta o odômetro aos registros existentes. Ela não corrige silenciosamente textos/status inválidos legados: esses dados devem ser revisados antes de aplicar as constraints.
+
+Novas rotas (GET): `/veiculos/:id`, `/veiculos/:id/editar`, `/pecas/:id`, `/pecas/:id/editar`.
+Novas ações (POST): `/veiculos/:id/editar`, `/veiculos/:id/excluir`, `/pecas/:id/editar`, `/pecas/:id/excluir`.
+
+A porta pode ser configurada por `PORT` no `.env` (padrão: 3000). `start:dev` não reinicia automaticamente: pare e execute de novo depois de alterar TypeScript.
+
+### Verificação
+
+```bash
+npm test
+npm run schema:check
+```
+
+`npm test` compila e executa testes de validação e regras, sem precisar de banco. `schema:check` usa a conexão do `.env`, sem executar migrations nem alterar dados. Confere tabelas, colunas, tipos, nulabilidade, tamanhos e migrations pendentes; não substitui uma inspeção completa de todas as constraints.
+
+As migrations compartilhadas V1–V5 foram preservadas. Não use `migration:revert` indiscriminadamente: o down da V5 original remove registros das tabelas.

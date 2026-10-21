@@ -1,8 +1,9 @@
+<section aria-label="Manutencoes">
 {{!< ../layout}}
 <h1 class="titulo-pagina">Registrar manutenção</h1>
 <p class="apoio">Toda manutenção nasce com o status "Agendada", definido pela aplicação.</p>
 
-<form class="formulario" method="POST" action="/manutencoes">
+<form data-validar class="formulario" method="POST" action="/manutencoes">
   {{> campos}}
 
   <div class="acoes">
@@ -10,3 +11,5 @@
     <a class="link-secundario" href="/manutencoes">Cancelar</a>
   </div>
 </form>
+
+</section>

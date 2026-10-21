@@ -25,8 +25,8 @@ const dinheiro = {
 
 @Entity('manutencoes')
 export class Manutencao {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id: string;
 
   @Column({ length: 100 })
   tipo: string;

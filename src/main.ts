@@ -47,7 +47,8 @@ async function bootstrap() {
     Array.isArray(lista) && lista.some((item) => String(item) === String(valor)),
   );
 
-  await app.listen(3000);
-  console.log('Aplicação rodando em http://localhost:3000');
+  const porta = Number(process.env.PORT ?? 3000);
+  await app.listen(porta);
+  console.log(`Aplicação rodando em http://localhost:${porta}`);
 }
 bootstrap();

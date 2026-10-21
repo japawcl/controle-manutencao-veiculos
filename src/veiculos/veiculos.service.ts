@@ -11,8 +11,8 @@ export class VeiculosService {
     return this.veiculosRepository.find({ order: { apelido: 'ASC' } });
   }
 
-  buscarPorId(id: number): Promise<Veiculo | null> {
-    return this.veiculosRepository.findOneBy({ id });
+  buscarPorId(id: string | number): Promise<Veiculo | null> {
+    return this.veiculosRepository.findOneBy({ id: String(id) });
   }
 
   async cadastrar(dados: SalvarVeiculoDto): Promise<Veiculo> {
@@ -24,7 +24,28 @@ export class VeiculosService {
     return this.veiculosRepository.save(veiculo);
   }
 
-  async atualizarKm(id: number, km: number): Promise<void> {
+  async atualizar(id: number, dados: SalvarVeiculoDto): Promise<string | null> {
+    const veiculo = await this.buscarPorId(id);
+    if (!veiculo) return 'Veículo não encontrado.';
+    if (dados.kmAtual < veiculo.kmAtual) return 'O odômetro não pode retroceder.';
+    Object.assign(veiculo, dados, { placa: dados.placa.toUpperCase() });
+    await this.veiculosRepository.save(veiculo);
+    return null;
+  }
+
+  async excluir(id: number): Promise<string | null> {
+    try {
+      const resultado = await this.veiculosRepository.delete(String(id));
+      return resultado.affected ? null : 'Veículo não encontrado.';
+    } catch (erro) {
+      if ((erro as { driverError?: { code?: string } }).driverError?.code === '23503') {
+        return 'Não é possível excluir um veículo com manutenções vinculadas.';
+      }
+      throw erro;
+    }
+  }
+
+  async atualizarKm(id: string | number, km: number): Promise<void> {
     const veiculo = await this.buscarPorId(id);
 
     if (veiculo && km > veiculo.kmAtual) {

@@ -1,5 +1,5 @@
 {{!< layout}}
-<h1 class="titulo-pagina">Painel</h1>
+<h1 class="titulo-pagina"><img class="logo" src="/img/veiculo.svg" alt="Veículo"> Painel</h1>
 <p class="apoio">Resumo dos serviços registrados nos seus veículos.</p>
 
 <section class="numeros">
@@ -46,4 +46,17 @@
       </li>
     {{/each}}
   </ul>
+</section>
+
+<section class="bloco">
+  <h2>Sobre o sistema</h2>
+  <p>Para proprietários e responsáveis por frotas acompanharem serviços, quilometragem e gastos dos veículos.</p>
+  <h3>Funcionalidades</h3>
+  <ul><li>Cadastrar e consultar veículos.</li><li>Planejar e acompanhar manutenções.</li><li>Associar peças e consultar custos.</li></ul>
+  <details><summary>Como registrar uma manutenção?</summary><p>Cadastre o veículo e as peças, acesse Registrar manutenção e preencha os dados do serviço.</p></details>
+</section>
+<section class="bloco">
+  <h2>Listagem resumida dos últimos serviços</h2>
+  <div class="tabela-container"><table class="tabela"><thead><tr><th>ID</th><th>Serviço</th><th>Veículo</th><th>Status</th></tr></thead>
+  <tbody>{{#each ultimas}}<tr><td>{{this.id}}</td><td><a href="/manutencoes/{{this.id}}">{{this.tipo}}</a></td><td>{{this.veiculo.apelido}}</td><td>{{this.status}}</td></tr>{{else}}<tr><td colspan="4">Nenhum serviço registrado.</td></tr>{{/each}}</tbody></table></div>
 </section>

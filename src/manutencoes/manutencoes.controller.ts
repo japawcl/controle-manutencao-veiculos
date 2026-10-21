@@ -1,3 +1,4 @@
+import { AlterarStatusDto } from './dto/alterar-status.dto';
 import {
   Body,
   Controller,
@@ -81,8 +82,13 @@ export class ManutencoesController {
     );
 
     if (!resultado.ok) {
-      definirMensagem(requisicao, 'erro', resultado.motivo);
-      return resposta.redirect(302, '/manutencoes');
+      return resposta.status(200).render('manutencoes/nova', {
+        titulo: 'Manutenção', pagina: 'manutencoes',
+        veiculos: await this.veiculosService.listarTodos(),
+        pecas: await this.pecasService.listarTodas(),
+        statusPossiveis: STATUS_POSSIVEIS,
+        manutencao: corpo, pecasSelecionadas, erros: {}, erro: resultado.motivo,
+      });
     }
 
     definirMensagem(requisicao, 'sucesso', 'Manutenção cadastrada com sucesso!');
@@ -147,8 +153,13 @@ export class ManutencoesController {
     );
 
     if (!resultado.ok) {
-      definirMensagem(requisicao, 'erro', resultado.motivo);
-      return resposta.redirect(302, '/manutencoes');
+      return resposta.status(200).render('manutencoes/editar', {
+        titulo: 'Manutenção', pagina: 'manutencoes',
+        veiculos: await this.veiculosService.listarTodos(),
+        pecas: await this.pecasService.listarTodas(),
+        statusPossiveis: STATUS_POSSIVEIS,
+        manutencao: { ...corpo, id }, pecasSelecionadas, erros: {}, erro: resultado.motivo,
+      });
     }
 
     definirMensagem(requisicao, 'sucesso', 'Manutenção atualizada com sucesso!');
@@ -158,10 +169,16 @@ export class ManutencoesController {
   @Post(':id/status')
   async alterarStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: StatusManutencao,
+    @Body() corpo: Record<string, unknown>,
     @Req() requisicao: Request,
     @Res() resposta: Response,
   ) {
+    const { dados, erros, temErros } = await validarFormulario(AlterarStatusDto, corpo);
+    if (temErros) {
+      definirMensagem(requisicao, 'erro', erros.status);
+      return resposta.redirect(302, `/manutencoes/${id}`);
+    }
+    const status = dados.status;
     const resultado = await this.manutencoesService.alterarStatus(id, status);
 
     if (!resultado.ok) {

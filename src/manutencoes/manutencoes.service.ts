@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ManutencoesRepository } from './manutencoes.repository';
-import { Manutencao, StatusManutencao } from './manutencao.entity';
+import { Manutencao, StatusManutencao, STATUS_POSSIVEIS } from './manutencao.entity';
 import { SalvarManutencaoDto } from './dto/salvar-manutencao.dto';
 import { VeiculosService } from '../veiculos/veiculos.service';
 import { PecasService } from '../pecas/pecas.service';
@@ -24,16 +24,16 @@ export class ManutencoesService {
     });
   }
 
-  buscarPorId(id: number): Promise<Manutencao | null> {
+  buscarPorId(id: string | number): Promise<Manutencao | null> {
     return this.manutencoesRepository.findOne({
-      where: { id },
+      where: { id: String(id) },
       relations: { veiculo: true, pecas: true },
     });
   }
 
-  listarPorVeiculo(veiculoId: number): Promise<Manutencao[]> {
+  listarPorVeiculo(veiculoId: string | number): Promise<Manutencao[]> {
     return this.manutencoesRepository.find({
-      where: { veiculo: { id: veiculoId } },
+      where: { veiculo: { id: String(veiculoId) } },
       relations: { veiculo: true },
     });
   }
@@ -42,12 +42,12 @@ export class ManutencoesService {
     return this.manutencoesRepository.somarCustos();
   }
 
-  gastoPorVeiculo(veiculoId: number): Promise<number> {
+  gastoPorVeiculo(veiculoId: string | number): Promise<number> {
     return this.manutencoesRepository.somarCustosPorVeiculo(veiculoId);
   }
 
-  contarPorVeiculo(veiculoId: number): Promise<number> {
-    return this.manutencoesRepository.countBy({ veiculo: { id: veiculoId } });
+  contarPorVeiculo(veiculoId: string | number): Promise<number> {
+    return this.manutencoesRepository.countBy({ veiculo: { id: String(veiculoId) } });
   }
 
   contarPorStatus(status: StatusManutencao): Promise<number> {
@@ -68,6 +68,9 @@ export class ManutencoesService {
       return { ok: false, motivo: 'Veículo não encontrado.' };
     }
 
+    const pecas = await this.pecasService.buscarPorIds(pecasIds);
+    if (!pecas) return { ok: false, motivo: 'Selecione apenas peças existentes e válidas.' };
+
     const manutencao = this.manutencoesRepository.create({
       tipo: dados.tipo,
       descricao: dados.descricao,
@@ -77,7 +80,7 @@ export class ManutencoesService {
       custo: dados.custo,
       status: 'Agendada',
       veiculo,
-      pecas: await this.pecasService.buscarPorIds(pecasIds),
+      pecas,
     });
 
     const salva = await this.manutencoesRepository.save(manutencao);
@@ -112,6 +115,9 @@ export class ManutencoesService {
       };
     }
 
+    const pecas = await this.pecasService.buscarPorIds(pecasIds);
+    if (!pecas) return { ok: false, motivo: 'Selecione apenas peças existentes e válidas.' };
+
     manutencao.tipo = dados.tipo;
     manutencao.descricao = dados.descricao;
     manutencao.oficina = dados.oficina;
@@ -120,7 +126,7 @@ export class ManutencoesService {
     manutencao.custo = dados.custo;
     manutencao.status = novoStatus;
     manutencao.veiculo = veiculo;
-    manutencao.pecas = await this.pecasService.buscarPorIds(pecasIds);
+    manutencao.pecas = pecas;
 
     const salva = await this.manutencoesRepository.save(manutencao);
     await this.veiculosService.atualizarKm(veiculo.id, dados.km);
@@ -169,6 +175,6 @@ export class ManutencoesService {
     atual: StatusManutencao,
     novo: StatusManutencao,
   ): boolean {
-    return !(atual === 'Concluída' && novo === 'Agendada');
+    return STATUS_POSSIVEIS.includes(novo) && !(atual === 'Concluída' && novo === 'Agendada');
   }
 }

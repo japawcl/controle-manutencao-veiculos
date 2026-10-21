@@ -8,7 +8,9 @@
     "start:dev": "ts-node src/main.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/banco/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/banco/data-source.ts",
-    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/banco/data-source.ts"
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/banco/data-source.ts",
+    "test": "npm run build && node --test tests/*.test.cjs",
+    "schema:check": "npm run build && node scripts/verificar-schema.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -32,5 +34,8 @@
     "@types/node": "^22.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

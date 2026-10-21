@@ -1,15 +1,16 @@
+<section aria-label="Manutencoes">
 {{!< ../layout}}
 <a class="voltar" href="/manutencoes">Voltar para a lista</a>
 
 <h1 class="titulo-pagina">Editar manutenção</h1>
 <p class="apoio">Alterando o registro número {{manutencao.id}}.</p>
 
-<form class="formulario" method="POST" action="/manutencoes/{{manutencao.id}}/editar">
+<form data-validar class="formulario" method="POST" action="/manutencoes/{{manutencao.id}}/editar">
   {{> campos}}
 
-  <label>
+  <label for="status">
     Status
-    <select name="status" class="{{#if erros.status}}campo-erro{{/if}}">
+    <select id="status" name="status" class="{{#if erros.status}}campo-erro{{/if}}" required>
       {{#each statusPossiveis}}
         <option value="{{this}}" {{#if (eq @root.manutencao.status this)}}selected{{/if}}>{{this}}</option>
       {{/each}}
@@ -22,3 +23,5 @@
     <a class="link-secundario" href="/manutencoes">Cancelar</a>
   </div>
 </form>
+
+</section>

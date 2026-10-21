@@ -306,3 +306,11 @@ a:focus-visible {
   border-radius: 999px;
   font-size: 14px;
 }
+
+/* A classe de erro deve prevalecer sobre a borda normal dos formulários. */
+.formulario input.campo-erro, .formulario select.campo-erro,
+.formulario textarea.campo-erro, .formulario-linha input.campo-erro,
+.formulario-linha select.campo-erro { border-color: #c0392b; background: #fff5f5; }
+.contador { margin: 0; font-size: 12px; }
+.tabela-container { overflow-x: auto; }
+.logo { width: 36px; height: 36px; vertical-align: middle; }

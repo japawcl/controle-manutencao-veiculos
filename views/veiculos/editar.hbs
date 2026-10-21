@@ -1,0 +1,57 @@
+<section aria-label="Veiculos">
+{{!< ../layout}}
+<a class="voltar" href="/veiculos">Voltar para a lista</a>
+
+<h1 class="titulo-pagina">Editar veículo</h1>
+<p class="apoio">Corrija os dados sem reduzir o odômetro já registrado.</p>
+
+<form data-validar class="formulario" method="POST" action="/veiculos/{{veiculo.id}}/editar">
+  <label for="apelido">
+    Apelido
+    <input type="text" id="apelido" name="apelido" placeholder="Carro da família" value="{{veiculo.apelido}}"
+      class="{{#if erros.apelido}}campo-erro{{/if}}" required maxlength="60" minlength="2">
+    {{#if erros.apelido}}<span class="mensagem-erro">{{erros.apelido}}</span>{{/if}}
+  </label>
+
+  <label for="marca">
+    Marca
+    <input type="text" id="marca" name="marca" placeholder="Fiat" value="{{veiculo.marca}}"
+      class="{{#if erros.marca}}campo-erro{{/if}}" required maxlength="60" minlength="2">
+    {{#if erros.marca}}<span class="mensagem-erro">{{erros.marca}}</span>{{/if}}
+  </label>
+
+  <label for="modelo">
+    Modelo
+    <input type="text" id="modelo" name="modelo" placeholder="Argo Drive 1.0" value="{{veiculo.modelo}}"
+      class="{{#if erros.modelo}}campo-erro{{/if}}" required maxlength="60" minlength="2">
+    {{#if erros.modelo}}<span class="mensagem-erro">{{erros.modelo}}</span>{{/if}}
+  </label>
+
+  <label for="placa">
+    Placa
+    <input type="text" id="placa" name="placa" placeholder="ABC-1D23" value="{{veiculo.placa}}"
+      class="{{#if erros.placa}}campo-erro{{/if}}" required maxlength="8" minlength="7">
+    {{#if erros.placa}}<span class="mensagem-erro">{{erros.placa}}</span>{{/if}}
+  </label>
+
+  <label for="ano">
+    Ano
+    <input type="number" id="ano" name="ano" min="1950" max="2100" placeholder="2021" value="{{veiculo.ano}}"
+      class="{{#if erros.ano}}campo-erro{{/if}}" required>
+    {{#if erros.ano}}<span class="mensagem-erro">{{erros.ano}}</span>{{/if}}
+  </label>
+
+  <label for="kmAtual">
+    Quilometragem atual
+    <input type="number" id="kmAtual" name="kmAtual" min="0" placeholder="68000" value="{{veiculo.kmAtual}}"
+      class="{{#if erros.kmAtual}}campo-erro{{/if}}" required>
+    {{#if erros.kmAtual}}<span class="mensagem-erro">{{erros.kmAtual}}</span>{{/if}}
+  </label>
+
+  <div class="acoes">
+    <button type="submit" class="botao">Salvar veículo</button>
+    <a class="link-secundario" href="/veiculos">Cancelar</a>
+  </div>
+</form>
+
+</section>

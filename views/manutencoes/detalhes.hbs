@@ -1,3 +1,4 @@
+<section aria-label="Manutencoes">
 {{!< ../layout}}
 <a class="voltar" href="/manutencoes">Voltar para a lista</a>
 
@@ -9,7 +10,7 @@
   <div class="acoes-linha">
     <a class="botao" href="/manutencoes/{{manutencao.id}}/editar">Editar</a>
     <form method="POST" action="/manutencoes/{{manutencao.id}}/excluir"
-      onsubmit="return confirm('Deseja excluir esta manutenção?')">
+      data-confirmar="Deseja excluir esta manutenção?">
       <button type="submit" class="link-perigo">Excluir</button>
     </form>
   </div>
@@ -71,7 +72,8 @@
 <div class="bloco">
   <h2>Alterar status</h2>
   <form class="formulario-linha" method="POST" action="/manutencoes/{{manutencao.id}}/status">
-    <select name="status">
+    <label for="status">Novo status</label>
+    <select id="status" name="status" required>
       {{#each statusPossiveis}}
         <option value="{{this}}" {{#if (eq @root.manutencao.status this)}}selected{{/if}}>{{this}}</option>
       {{/each}}
@@ -80,3 +82,5 @@
   </form>
   <p class="apoio">Um serviço já concluído não pode voltar para agendado.</p>
 </div>
+
+</section>

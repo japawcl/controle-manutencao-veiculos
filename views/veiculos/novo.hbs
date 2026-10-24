@@ -29,21 +29,21 @@
 
   <label for="placa">
     Placa
-    <input type="text" id="placa" name="placa" placeholder="ABC-1D23" value="{{veiculo.placa}}"
+    <input type="text" id="placa" name="placa" pattern="[A-Za-z]{3}-?[0-9][0-9A-Za-z][0-9]{2}" placeholder="ABC-1D23" value="{{veiculo.placa}}"
       class="{{#if erros.placa}}campo-erro{{/if}}" required maxlength="8" minlength="7">
     {{#if erros.placa}}<span class="mensagem-erro">{{erros.placa}}</span>{{/if}}
   </label>
 
   <label for="ano">
-    Ano
-    <input type="number" id="ano" name="ano" min="1950" max="2100" placeholder="2021" value="{{veiculo.ano}}"
+    Ano-modelo
+    <input type="number" id="ano" name="ano" min="1950" max="{{anoMaximo}}" placeholder="2021" value="{{veiculo.ano}}"
       class="{{#if erros.ano}}campo-erro{{/if}}" required>
     {{#if erros.ano}}<span class="mensagem-erro">{{erros.ano}}</span>{{/if}}
   </label>
 
   <label for="kmAtual">
     Quilometragem atual
-    <input type="number" id="kmAtual" name="kmAtual" min="0" placeholder="68000" value="{{veiculo.kmAtual}}"
+    <input type="number" id="kmAtual" name="kmAtual" min="0" max="2147483647" step="1" placeholder="68000" value="{{veiculo.kmAtual}}"
       class="{{#if erros.kmAtual}}campo-erro{{/if}}" required>
     {{#if erros.kmAtual}}<span class="mensagem-erro">{{erros.kmAtual}}</span>{{/if}}
   </label>

@@ -8,7 +8,8 @@ const { AlterarStatusDto } = require('../dist/manutencoes/dto/alterar-status.dto
 const { ManutencoesService } = require('../dist/manutencoes/manutencoes.service');
 const { PecasService } = require('../dist/pecas/pecas.service');
 const { VeiculosService } = require('../dist/veiculos/veiculos.service');
-const dados = { tipo: 'Troca de óleo', data: '2026-10-20', km: '0', custo: '0', veiculoId: '1' };
+const { hojeNoBrasil } = require('../dist/comum/datas');
+const dados = { tipo: 'Troca de óleo', data: hojeNoBrasil(), km: '0', custo: '0', veiculoId: '1' };
 
 test('campos numéricos vazios não se confundem com zero', async () => {
   assert.equal((await validarFormulario(SalvarManutencaoDto, dados)).temErros, false);
@@ -34,7 +35,7 @@ test('rota de status possui validação executável, inclusive para ausência', 
 });
 test('service impede transição proibida e valores fora do domínio', async () => {
   let saves = 0;
-  const repo = { findOne: async () => ({ id: '1', status: 'Concluída' }), save: async x => { saves++; return x; } };
+  const repo = { findOne: async () => ({ id: '1', status: 'Concluída', data: hojeNoBrasil(), veiculo: { id: '1' } }), salvarComOdometro: async x => { saves++; return x; } };
   const service = new ManutencoesService(repo, {}, {});
   assert.equal((await service.alterarStatus(1, 'Agendada')).ok, false);
   assert.equal((await service.alterarStatus(1, 'Cancelada')).ok, false);
@@ -50,7 +51,7 @@ test('peça inexistente ou identificador malformado não é descartado silencios
 });
 test('cadastro decide status inicial e não salva se uma relação não existir', async () => {
   let salvo;
-  const repo = { create: x => x, save: async x => { salvo = x; return x; } };
+  const repo = { create: x => x, salvarComOdometro: async x => { salvo = x; return x; } };
   const service = new ManutencoesService(repo, { buscarPorId: async () => ({ id: '1' }), atualizarKm: async () => {} }, { buscarPorIds: async () => [] });
   assert.equal((await service.cadastrar({ ...dados, status: 'Concluída' }, [])).ok, true);
   assert.equal(salvo.status, 'Agendada');

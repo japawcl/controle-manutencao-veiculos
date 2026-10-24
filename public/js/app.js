@@ -29,10 +29,38 @@ document.addEventListener('DOMContentLoaded', function () {
     aviso.className = 'mensagem-erro';
     aviso.setAttribute('role', 'alert');
     form.prepend(aviso);
+    function atualizarDatas() {
+      var campo = form.querySelector('[data-data-manutencao]');
+      if (!campo || !campo.dataset.hoje) return;
+      var status = form.querySelector('[name="status"]');
+      var registro = form.querySelector('[name="registro"]');
+      var atual = status ? status.value : registro && registro.value === 'historico' ? 'Concluída' : 'Agendada';
+      campo.removeAttribute('min');
+      campo.removeAttribute('max');
+      if (atual === 'Agendada') {
+        var antigaInalterada = campo.dataset.statusOriginal === 'Agendada' && campo.dataset.dataOriginal === campo.value;
+        if (!antigaInalterada) campo.min = campo.dataset.hoje;
+      } else {
+        campo.max = campo.dataset.hoje;
+      }
+    }
+    atualizarDatas();
     function validar(campo) {
       campo.setCustomValidity('');
       if (campo.required && campo.type === 'text' && !campo.value.trim()) {
         campo.setCustomValidity('Preencha este campo.');
+      }
+      if (campo.matches('[data-moeda]') && campo.value.trim()) {
+        var valor = campo.value.trim().replace(/^R\$\s*/, '');
+        var agrupado = /^\d{1,3}(?:\.\d{3})+,\d{1,2}$/.test(valor);
+        var decimal = /^\d+(?:[.,]\d{1,2})?$/.test(valor);
+        var numero = Number((agrupado ? valor.replace(/\./g, '') : valor).replace(',', '.'));
+        if ((!agrupado && !decimal) || !Number.isFinite(numero) || numero > 99999999.99) {
+          campo.setCustomValidity('Informe dinheiro como 100,50 ou 1.234,56, até R$ 99.999.999,99.');
+        }
+      }
+      if (campo.type === 'number' && campo.value && !/^-?\d+$/.test(campo.value)) {
+        campo.setCustomValidity('Informe um número inteiro, sem letras ou notação científica.');
       }
       var invalido = !campo.checkValidity();
       campo.classList.toggle('campo-erro', invalido);
@@ -40,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return !invalido;
     }
     form.addEventListener('submit', function (evento) {
+      atualizarDatas();
       var campos = Array.from(form.querySelectorAll('input, select, textarea'));
       var invalidos = campos.filter(function (campo) { return !validar(campo); });
       aviso.textContent = invalidos.length ? 'Revise os campos destacados antes de salvar.' : '';
@@ -50,8 +79,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
     form.addEventListener('input', function (evento) {
+      atualizarDatas();
       if (evento.target.matches('input, select, textarea')) validar(evento.target);
     });
+    form.addEventListener('change', atualizarDatas);
   });
   document.querySelectorAll('form[data-confirmar]').forEach(function (form) {
     form.addEventListener('submit', function (evento) {

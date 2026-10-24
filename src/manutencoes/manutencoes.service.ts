@@ -1,3 +1,4 @@
+import { hojeNoBrasil } from '../comum/datas';
 import { Injectable } from '@nestjs/common';
 import { ManutencoesRepository } from './manutencoes.repository';
 import { Manutencao, StatusManutencao, STATUS_POSSIVEIS } from './manutencao.entity';
@@ -62,6 +63,10 @@ export class ManutencoesService {
     dados: SalvarManutencaoDto,
     pecasIds: number[],
   ): Promise<ResultadoOperacao> {
+    const status: StatusManutencao = dados.registro === 'historico' ? 'Concluída' : 'Agendada';
+    const motivoData = this.validarData(dados.data, status);
+    if (motivoData) return { ok: false, motivo: motivoData };
+
     const veiculo = await this.veiculosService.buscarPorId(dados.veiculoId);
 
     if (!veiculo) {
@@ -78,13 +83,12 @@ export class ManutencoesService {
       data: dados.data,
       km: dados.km,
       custo: dados.custo,
-      status: 'Agendada',
+      status,
       veiculo,
       pecas,
     });
 
-    const salva = await this.manutencoesRepository.save(manutencao);
-    await this.veiculosService.atualizarKm(veiculo.id, dados.km);
+    const salva = await this.manutencoesRepository.salvarComOdometro(manutencao, status === 'Concluída');
 
     return { ok: true, manutencao: salva };
   }
@@ -111,9 +115,12 @@ export class ManutencoesService {
     if (!this.transicaoPermitida(manutencao.status, novoStatus)) {
       return {
         ok: false,
-        motivo: 'Uma manutenção concluída não pode voltar para agendada.',
+        motivo: 'Não é permitido voltar o status. Uma manutenção concluída não pode ser reaberta.',
       };
     }
+
+    const motivoData = this.validarData(dados.data, novoStatus, manutencao);
+    if (motivoData) return { ok: false, motivo: motivoData };
 
     const pecas = await this.pecasService.buscarPorIds(pecasIds);
     if (!pecas) return { ok: false, motivo: 'Selecione apenas peças existentes e válidas.' };
@@ -128,8 +135,7 @@ export class ManutencoesService {
     manutencao.veiculo = veiculo;
     manutencao.pecas = pecas;
 
-    const salva = await this.manutencoesRepository.save(manutencao);
-    await this.veiculosService.atualizarKm(veiculo.id, dados.km);
+    const salva = await this.manutencoesRepository.salvarComOdometro(manutencao, novoStatus === 'Concluída');
 
     return { ok: true, manutencao: salva };
   }
@@ -147,12 +153,15 @@ export class ManutencoesService {
     if (!this.transicaoPermitida(manutencao.status, novoStatus)) {
       return {
         ok: false,
-        motivo: 'Uma manutenção concluída não pode voltar para agendada.',
+        motivo: 'Não é permitido voltar o status. Uma manutenção concluída não pode ser reaberta.',
       };
     }
 
+    const motivoData = this.validarData(manutencao.data, novoStatus, manutencao);
+    if (motivoData) return { ok: false, motivo: motivoData };
+
     manutencao.status = novoStatus;
-    const salva = await this.manutencoesRepository.save(manutencao);
+    const salva = await this.manutencoesRepository.salvarComOdometro(manutencao, novoStatus === 'Concluída');
 
     return { ok: true, manutencao: salva };
   }
@@ -171,10 +180,25 @@ export class ManutencoesService {
     return true;
   }
 
-  private transicaoPermitida(
-    atual: StatusManutencao,
-    novo: StatusManutencao,
-  ): boolean {
-    return STATUS_POSSIVEIS.includes(novo) && !(atual === 'Concluída' && novo === 'Agendada');
+  private validarData(data: string, status: StatusManutencao, original?: Manutencao): string | null {
+    const hoje = hojeNoBrasil();
+    if (status === 'Agendada' && data < hoje) {
+      // Um agendamento que venceu pode continuar no histórico e receber correções.
+      const vencidaInalterada = original?.status === 'Agendada' && original.data === data;
+      if (!vencidaInalterada) return 'Um novo agendamento não pode ter data passada. Para um serviço realizado, escolha registrar no histórico.';
+    }
+    if (status !== 'Agendada' && data > hoje) {
+      return 'Uma manutenção em andamento ou concluída não pode ter data futura. Corrija a data antes de alterar o status.';
+    }
+    return null;
+  }
+
+  private transicaoPermitida(atual: StatusManutencao, novo: StatusManutencao): boolean {
+    const transicoes: Record<StatusManutencao, StatusManutencao[]> = {
+      'Agendada': ['Agendada', 'Em andamento', 'Concluída'],
+      'Em andamento': ['Em andamento', 'Concluída'],
+      'Concluída': ['Concluída'],
+    };
+    return STATUS_POSSIVEIS.includes(novo) && (transicoes[atual]?.includes(novo) ?? false);
   }
 }

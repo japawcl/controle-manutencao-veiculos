@@ -1,3 +1,4 @@
+import { tipoId } from '../banco/modo-demo';
 import {
   Column,
   Entity,
@@ -25,7 +26,7 @@ const dinheiro = {
 
 @Entity('manutencoes')
 export class Manutencao {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: tipoId })
   id: string;
 
   @Column({ length: 100 })

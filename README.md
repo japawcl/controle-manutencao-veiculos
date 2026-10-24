@@ -21,7 +21,29 @@ Sistema web para registrar e acompanhar as manutenções feitas em veículos: qu
 - **Handlebars (hbs)** — motor de templates
 - **HTML, CSS e JavaScript** — camada de apresentação
 
-## Como executar
+## Visualizar sem PostgreSQL e sem senha
+
+Depois de clonar, dentro da pasta do projeto:
+
+```powershell
+npm.cmd ci
+npm.cmd run demo
+```
+
+Abra o endereço informado no terminal no Chrome ou Edge (padrão: http://localhost:3000). Mantenha o terminal aberto e use Ctrl+C para encerrar. No macOS/Linux use `npm` no lugar de `npm.cmd`.
+
+Este modo usa SQLite via sql.js, instalado pelo npm, sem servidor adicional, sem pgAdmin, sem senha e sem exigir `.env`. Os exemplos são criados automaticamente na primeira execução e os cadastros ficam no arquivo local `.dados/demo.sqlite`. Reiniciar conserva os dados. Esse arquivo está no `.gitignore`: cada computador mantém seu próprio banco.
+
+O SQLite serve para demonstrar as telas e operações. O modo PostgreSQL abaixo continua disponível para os conteúdos específicos da disciplina. Os bancos são independentes: os dados não são transferidos automaticamente entre os modos.
+
+Não execute duas instâncias da demonstração simultaneamente usando o mesmo arquivo. Se a porta estiver ocupada, encerre a instância anterior ou informe outra porta antes de iniciar:
+
+```powershell
+$env:PORT = '3001'
+npm.cmd run demo
+```
+
+## Como executar com PostgreSQL
 
 Pré-requisitos: Node.js 22 ou superior (recomendado: 24 LTS) e PostgreSQL rodando.
 
@@ -193,9 +215,9 @@ validação falhou?
 
 Ficam no Service, não no Controller nem no formulário:
 
-- Toda manutenção nasce com status **"Agendada"** — a aplicação decide, não o usuário.
-- Uma manutenção **"Concluída" não volta para "Agendada"**. A tentativa é recusada e o usuário recebe a mensagem de erro.
-- O **odômetro do veículo nunca retrocede**: salvar uma manutenção com quilometragem maior que a registrada atualiza o veículo; com quilometragem menor, não altera nada.
+- Um novo agendamento nasce **Agendada**; um serviço já realizado nasce **Concluída**. A aplicação decide o status conforme o tipo de registro e valida a data.
+- O status só avança; uma manutenção **Concluída não pode ser reaberta**. A tentativa é recusada e o usuário recebe a mensagem de erro.
+- O **odômetro do veículo nunca retrocede**: concluir uma manutenção com quilometragem maior atualiza o veículo; agendamentos e leituras menores não alteram o odômetro.
 - O **nome da peça é único**, verificado antes de gravar e também garantido por `UNIQUE` no banco.
 
 ## Migrations
@@ -290,3 +312,39 @@ npm run schema:check
 `npm test` compila e executa testes de validação e regras, sem precisar de banco. `schema:check` usa a conexão do `.env`, sem executar migrations nem alterar dados. Confere tabelas, colunas, tipos, nulabilidade, tamanhos e migrations pendentes; não substitui uma inspeção completa de todas as constraints.
 
 As migrations compartilhadas V1–V5 foram preservadas. Não use `migration:revert` indiscriminadamente: o down da V5 original remove registros das tabelas.
+
+### Implementação do modo de demonstração
+
+- `scripts/demo.cjs`: seleciona o modo e cria a pasta local de dados.
+- `src/banco/modo-demo.ts`: seleção explícita e tipo de ID por banco.
+- `src/banco/data-source.ts`: escolhe SQLite somente quando o launcher define MODO_DEMO=1.
+- `src/banco/demo/`: migration SQLite separada e proteção das chaves estrangeiras após salvar o arquivo.
+- `tests/demo.test.cjs`: teste HTTP com SQLite temporário, CRUD e persistência após reiniciar. Não exige PostgreSQL.
+
+O schema SQLite usa IDs INTEGER gerados; o PostgreSQL mantém BIGINT e as migrations V1–V6 originais, além da nova V7 de unicidade de placa. SQLite e PostgreSQL não são tecnologias idênticas: a demonstração não substitui apresentar migrations/configuração PostgreSQL quando isso for solicitado pelo professor.
+
+`npm test` agora executa 17 testes, incluindo a demonstração local. A suíte utiliza apenas bancos temporários próprios e não modifica o banco PostgreSQL pessoal.
+
+
+## Revisão das validações (23/10/2026)
+
+- **Agendar serviço:** permite hoje ou uma data futura, usando o dia de São Paulo. Agendamentos antigos vencidos podem ser corrigidos mantendo sua data original.
+- **Serviço já realizado (histórico):** permite hoje ou datas passadas e salva com status Concluída. Não permite concluir ou iniciar um serviço com data futura, seja pela edição ou pela troca de status.
+- **Status:** só avança de Agendada para Em andamento/Concluída e de Em andamento para Concluída. Serviços concluídos não podem ser reabertos.
+- **Dinheiro:** aceita `100,50`, `100.50`, `1.234,56` e `R$ 100,50`. Rejeita negativos, mais de duas casas, valores acima de R$ 99.999.999,99, hexadecimal e notação científica. `1.234` é ambíguo e é rejeitado; use `1.234,00` para mil duzentos e trinta e quatro reais.
+- **Quilometragem:** aceita somente inteiros entre 0 e 2.147.483.647. Agendamentos guardam a previsão sem alterar o odômetro; a conclusão atualiza o odômetro sem diminuí-lo, na mesma transação.
+- **Placa:** normalizada em maiúsculas e sem hífen; duplicação é bloqueada no cadastro, edição e banco. A própria placa pode ser mantida na edição.
+- **Ano-modelo:** de 1950 até o ano corrente mais um (limite atualizado automaticamente).
+- **Peças e veículo:** identificadores devem ser inteiros válidos e corresponder a registros existentes.
+
+A migration V7 (PostgreSQL) e V2DemoPlacaUnica (SQLite) adicionam o índice de placa. Se já existirem placas duplicadas no banco, a atualização informa quais devem ser revisadas e interrompe sem excluir ou mesclar veículos automaticamente. As migrations antigas foram preservadas.
+
+Verificação: 17 testes automatizados aprovados, incluindo HTTP da demonstração, validações, atualização de um arquivo SQLite da versão anterior e persistência. A integração também foi conferida em PostgreSQL temporário, incluindo as sete migrations, as rotas e o schema. A aparência e os eventos no navegador ainda devem ser conferidos manualmente.
+
+Para visualizar no Windows, dentro da pasta do projeto:
+
+```powershell
+npm.cmd run demo
+```
+
+Abra http://localhost:3000 no seu navegador. Se o servidor já estiver aberto, pare com Ctrl+C antes de iniciar novamente. As mudanças só estarão disponíveis para outras pessoas após commit e push.

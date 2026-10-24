@@ -35,21 +35,23 @@
 <label for="data">
   Data
   <input type="date" id="data" name="data" value="{{manutencao.data}}"
+    data-data-manutencao data-hoje="{{hoje}}" data-data-original="{{dataOriginal}}" data-status-original="{{statusOriginal}}"
     class="{{#if erros.data}}campo-erro{{/if}}" required>
   {{#if erros.data}}<span class="mensagem-erro">{{erros.data}}</span>{{/if}}
 </label>
 
 <label for="km">
-  Quilometragem
-  <input type="number" id="km" name="km" min="0" placeholder="68000" value="{{manutencao.km}}"
+  Quilometragem do serviço (prevista no agendamento)
+  <input type="number" id="km" name="km" min="0" max="2147483647" step="1" placeholder="68000" value="{{manutencao.km}}"
     class="{{#if erros.km}}campo-erro{{/if}}" required>
   {{#if erros.km}}<span class="mensagem-erro">{{erros.km}}</span>{{/if}}
 </label>
 
 <label for="custo">
   Custo (R$)
-  <input type="number" id="custo" name="custo" min="0" step="0.01" placeholder="320.00" value="{{manutencao.custo}}"
+  <input type="text" inputmode="decimal" data-moeda id="custo" name="custo" maxlength="20" placeholder="320,00" value="{{manutencao.custo}}"
     class="{{#if erros.custo}}campo-erro{{/if}}" required>
+  <small>Exemplos: 100,50 ou 1.234,56. Até duas casas decimais.</small>
   {{#if erros.custo}}<span class="mensagem-erro">{{erros.custo}}</span>{{/if}}
 </label>
 

@@ -1,8 +1,9 @@
+import { tipoId } from '../banco/modo-demo';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('veiculos')
 export class Veiculo {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: tipoId })
   id: string;
 
   @Column({ length: 60 })

@@ -1,3 +1,4 @@
+import { inteiroFormulario } from '../comum/transformacoes';
 import { AlterarStatusDto } from './dto/alterar-status.dto';
 import {
   Body,
@@ -16,7 +17,7 @@ import { ManutencoesService } from './manutencoes.service';
 import { VeiculosService } from '../veiculos/veiculos.service';
 import { PecasService } from '../pecas/pecas.service';
 import { SalvarManutencaoDto } from './dto/salvar-manutencao.dto';
-import { STATUS_POSSIVEIS, StatusManutencao } from './manutencao.entity';
+import { STATUS_POSSIVEIS } from './manutencao.entity';
 import { comoLista, validarFormulario } from '../comum/validacao';
 import { definirMensagem } from '../comum/mensagens';
 
@@ -46,7 +47,7 @@ export class ManutencoesController {
       pagina: 'manutencoes',
       veiculos: await this.veiculosService.listarTodos(),
       pecas: await this.pecasService.listarTodas(),
-      manutencao: {},
+      manutencao: { registro: 'agendamento' },
       pecasSelecionadas: [],
       erros: {},
     };
@@ -78,7 +79,7 @@ export class ManutencoesController {
 
     const resultado = await this.manutencoesService.cadastrar(
       dados,
-      pecasSelecionadas.map(Number),
+      pecasSelecionadas.map(inteiroFormulario),
     );
 
     if (!resultado.ok) {
@@ -114,6 +115,7 @@ export class ManutencoesController {
       veiculos: await this.veiculosService.listarTodos(),
       pecas: await this.pecasService.listarTodas(),
       statusPossiveis: STATUS_POSSIVEIS,
+      dataOriginal: manutencao.data, statusOriginal: manutencao.status,
       manutencao: { ...manutencao, veiculoId: manutencao.veiculo.id },
       pecasSelecionadas: manutencao.pecas.map((peca) => String(peca.id)),
       erros: {},
@@ -127,6 +129,11 @@ export class ManutencoesController {
     @Req() requisicao: Request,
     @Res() resposta: Response,
   ) {
+    const registroAtual = await this.manutencoesService.buscarPorId(id);
+    if (!registroAtual) {
+      definirMensagem(requisicao, 'erro', 'Manutenção não encontrada.');
+      return resposta.redirect(302, '/manutencoes');
+    }
     const { dados, erros, temErros } = await validarFormulario(
       SalvarManutencaoDto,
       corpo,
@@ -140,6 +147,7 @@ export class ManutencoesController {
         veiculos: await this.veiculosService.listarTodos(),
         pecas: await this.pecasService.listarTodas(),
         statusPossiveis: STATUS_POSSIVEIS,
+        dataOriginal: registroAtual.data, statusOriginal: registroAtual.status,
         manutencao: { ...corpo, id },
         pecasSelecionadas,
         erros,
@@ -149,7 +157,7 @@ export class ManutencoesController {
     const resultado = await this.manutencoesService.atualizar(
       id,
       dados,
-      pecasSelecionadas.map(Number),
+      pecasSelecionadas.map(inteiroFormulario),
     );
 
     if (!resultado.ok) {
@@ -158,6 +166,7 @@ export class ManutencoesController {
         veiculos: await this.veiculosService.listarTodos(),
         pecas: await this.pecasService.listarTodas(),
         statusPossiveis: STATUS_POSSIVEIS,
+        dataOriginal: registroAtual.data, statusOriginal: registroAtual.status,
         manutencao: { ...corpo, id }, pecasSelecionadas, erros: {}, erro: resultado.motivo,
       });
     }

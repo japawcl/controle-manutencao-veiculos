@@ -1,4 +1,5 @@
-import { NumeroFormulario, TextoFormulario } from '../../comum/transformacoes';
+import { AnoModeloPermitido } from '../../comum/datas';
+import { NumeroFormulario, TextoFormulario, PlacaFormulario } from '../../comum/transformacoes';
 import {
   IsInt,
   IsNotEmpty,
@@ -24,9 +25,9 @@ export class SalvarVeiculoDto {
   @Length(2, 60, { message: 'O modelo deve ter entre 2 e 60 caracteres.' })
   modelo: string;
 
-  @TextoFormulario()
+  @PlacaFormulario()
   @IsNotEmpty({ message: 'A placa é obrigatória.' })
-  @Matches(/^[A-Za-z]{3}-?[0-9][0-9A-Za-z][0-9]{2}$/, {
+  @Matches(/^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$/, {
     message: 'Informe a placa no formato ABC-1234 ou ABC-1D23.',
   })
   placa: string;
@@ -34,7 +35,7 @@ export class SalvarVeiculoDto {
   @NumeroFormulario()
   @IsInt({ message: 'O ano deve ser um número inteiro.' })
   @Min(1950, { message: 'O ano deve ser 1950 ou posterior.' })
-  @Max(2100, { message: 'O ano informado é inválido.' })
+  @AnoModeloPermitido()
   ano: number;
 
   @NumeroFormulario()

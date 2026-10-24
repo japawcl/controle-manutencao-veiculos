@@ -72,7 +72,13 @@ export class VeiculosController {
       });
     }
 
-    await this.veiculosService.cadastrar(dados);
+    const resultado = await this.veiculosService.cadastrar(dados);
+    if (!resultado.ok) {
+      return resposta.status(200).render('veiculos/novo', {
+        titulo: 'Novo veículo', pagina: 'veiculos', veiculo: corpo,
+        erros: { placa: resultado.motivo },
+      });
+    }
     definirMensagem(requisicao, 'sucesso', 'Veículo cadastrado com sucesso!');
 
     return resposta.redirect(302, '/veiculos');

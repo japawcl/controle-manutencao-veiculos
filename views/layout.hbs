@@ -21,7 +21,11 @@
   </main>
 
   <footer class="rodape">
-    Projeto acadêmico com NestJS, TypeORM, PostgreSQL e Handlebars.
+    {{#if modoDemo}}
+      Modo de demonstração — dados salvos apenas neste computador.
+    {{else}}
+      Projeto acadêmico com NestJS, TypeORM, PostgreSQL e Handlebars.
+    {{/if}}
   </footer>
 
   <script src="/js/app.js" defer></script>

@@ -6,6 +6,8 @@ import session from 'express-session';
 import hbs from 'hbs';
 import { AppModule } from './app.module';
 import { mensagensFlash } from './comum/mensagens';
+import { modoDemo } from './banco/modo-demo';
+import { hojeNoBrasil, anoModeloMaximo } from './comum/datas';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -23,6 +25,12 @@ async function bootstrap() {
     }),
   );
   app.use(mensagensFlash);
+  app.use((_requisicao: unknown, resposta: { locals: Record<string, unknown> }, proximo: () => void) => {
+    resposta.locals.modoDemo = modoDemo;
+    resposta.locals.hoje = hojeNoBrasil();
+    resposta.locals.anoMaximo = anoModeloMaximo();
+    proximo();
+  });
 
   hbs.registerHelper('moeda', (valor: number) =>
     (valor ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),

@@ -1,3 +1,4 @@
+import { violacaoDeVinculo, violacaoDeUnicidade } from '../comum/erros-banco';
 import { Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import { PecasRepository } from './pecas.repository';
@@ -39,7 +40,7 @@ export class PecasService {
       await this.pecasRepository.save(peca);
       return null;
     } catch (erro) {
-      if ((erro as { driverError?: { code?: string } }).driverError?.code === '23505') return 'Já existe uma peça com esse nome.';
+      if (violacaoDeUnicidade(erro)) return 'Já existe uma peça com esse nome.';
       throw erro;
     }
   }
@@ -49,7 +50,7 @@ export class PecasService {
       const resultado = await this.pecasRepository.delete(String(id));
       return resultado.affected ? null : 'Peça não encontrada.';
     } catch (erro) {
-      if ((erro as { driverError?: { code?: string } }).driverError?.code === '23503') return 'Não é possível excluir uma peça utilizada em manutenções.';
+      if (violacaoDeVinculo(erro)) return 'Não é possível excluir uma peça utilizada em manutenções.';
       throw erro;
     }
   }
@@ -66,7 +67,7 @@ export class PecasService {
     try {
       peca = await this.pecasRepository.save(this.pecasRepository.create({ nome }));
     } catch (erro) {
-      if ((erro as { driverError?: { code?: string } }).driverError?.code === '23505') {
+      if (violacaoDeUnicidade(erro)) {
         return { ok: false, motivo: 'Já existe uma peça com esse nome.' };
       }
       throw erro;

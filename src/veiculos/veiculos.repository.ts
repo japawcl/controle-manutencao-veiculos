@@ -7,4 +7,9 @@ export class VeiculosRepository extends Repository<Veiculo> {
   constructor(dataSource: DataSource) {
     super(Veiculo, dataSource.createEntityManager());
   }
+  buscarPorPlaca(placa: string): Promise<Veiculo | null> {
+    return this.createQueryBuilder('veiculo')
+      .where("UPPER(REPLACE(veiculo.placa, '-', '')) = :placa", { placa })
+      .getOne();
+  }
 }

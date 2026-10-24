@@ -1,9 +1,17 @@
 <section aria-label="Manutencoes">
 {{!< ../layout}}
 <h1 class="titulo-pagina">Registrar manutenção</h1>
-<p class="apoio">Toda manutenção nasce com o status "Agendada", definido pela aplicação.</p>
+<p class="apoio">Agende um serviço para hoje ou depois, ou registre no histórico um serviço já realizado.</p>
 
 <form data-validar class="formulario" method="POST" action="/manutencoes">
+  <label for="registro" class="largo">
+    O que deseja registrar?
+    <select id="registro" name="registro" required>
+      <option value="agendamento" {{#if (eq manutencao.registro 'agendamento')}}selected{{/if}}>Agendar serviço</option>
+      <option value="historico" {{#if (eq manutencao.registro 'historico')}}selected{{/if}}>Serviço já realizado (histórico)</option>
+    </select>
+    {{#if erros.registro}}<span class="mensagem-erro">{{erros.registro}}</span>{{/if}}
+  </label>
   {{> campos}}
 
   <div class="acoes">

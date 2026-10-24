@@ -43,7 +43,7 @@ A primeira entrega pede no mínimo cinco páginas; a versão atual possui painel
 2. Abra `manutencoes.controller.ts`: a rota recebe os campos e chama a validação.
 3. Abra `salvar-manutencao.dto.ts`: os decorators definem dados aceitos.
 4. Abra `comum/transformacoes.ts`: texto é normalizado e vazio numérico não vira zero.
-5. Abra `manutencoes.service.ts`: valida o veículo, as peças e define Agendada como status inicial.
+5. Abra `manutencoes.service.ts`: valida o veículo, as peças e define Agendada para agendamento ou Concluída para histórico, validando a data.
 6. Abra `manutencoes.repository.ts`: Repository e QueryBuilder acessam os dados.
 7. Abra `manutencao.entity.ts`: veículo é um objeto e peças são uma coleção.
 8. Veja as FKs e a tabela associativa nas migrations V3/V4.
@@ -52,10 +52,10 @@ A primeira entrega pede no mínimo cinco páginas; a versão atual possui painel
 
 ## Regras demonstráveis
 
-- Nova manutenção começa Agendada, mesmo que a requisição tente outro status.
+- Novo agendamento começa Agendada; serviço já realizado começa Concluída, com data até hoje.
 - Somente Agendada, Em andamento e Concluída são aceitos.
-- Concluída não volta para Agendada.
-- Quilometragem não retrocede no fluxo sequencial; editar veículo também rejeita redução.
+- Status não retrocede: Concluída não volta para Em andamento nem Agendada.
+- Conclusão salva manutenção e odômetro em uma transação, com máximo atômico; editar veículo também rejeita redução.
 - Peças inexistentes ou IDs malformados impedem salvar a manutenção.
 - Nome de peça deve ser único, com proteção no banco e mensagem amigável.
 - Veículo com manutenção ou peça utilizada não pode ser excluído.
@@ -67,7 +67,7 @@ A primeira entrega pede no mínimo cinco páginas; a versão atual possui painel
 1. Usar Node 22+ (recomendado 24 LTS), npm e PostgreSQL.
 2. Criar banco de desenvolvimento e copiar `.env.example` para `.env`.
 3. Executar `npm ci`, `npm test` e `npm run start:dev`.
-4. Iniciar a aplicação aplica migrations pendentes, incluindo V6. Em banco com dados antigos inválidos, revisar esses dados antes de aplicar as novas constraints.
+4. Iniciar a aplicação aplica migrations pendentes, incluindo V6 e V7. Em banco com dados antigos inválidos, revisar esses dados antes de aplicar as novas constraints.
 5. Após iniciar, executar `npm run schema:check` para a verificação explícita, somente leitura.
 
 `synchronize:false` não é o mesmo que `ddl-auto=validate`. O comando de schema confere tabelas/colunas/tipos/nulabilidade/tamanhos e migrations pendentes, mas não compara todas as constraints automaticamente.
@@ -75,9 +75,9 @@ A primeira entrega pede no mínimo cinco páginas; a versão atual possui painel
 ## Verificações executadas nesta implementação
 
 - Compilação TypeScript aprovada.
-- Oito testes automatizados de validação e regras aprovados por `npm test`.
+- 17 testes automatizados de validação, regras e demonstração aprovados por `npm test`.
 - Testes HTTP com uma instância temporária de PostgreSQL 18, separada do banco do aluno.
-- Seis migrations aplicadas em banco vazio; segunda inicialização sem duplicação.
+- Sete migrations aplicadas em banco vazio; segunda inicialização sem duplicação.
 - Quinze rotas e recursos retornando resposta válida.
 - Cadastros, edição com múltiplas peças, bloqueio de status e relações inválidas, peça duplicada e odômetro decrescente verificados.
 - Exclusões vinculadas bloqueadas; exclusão de manutenção preservando entidades relacionadas verificada.
@@ -100,8 +100,41 @@ A primeira entrega pede no mínimo cinco páginas; a versão atual possui painel
 
 Não foram acrescentados login, Docker, deploy, frontend separado ou UUID como obrigação: o material os dispensa ou apresenta como alternativa. Os exemplos de relatórios e autenticação da introdução não constituem, sozinhos, enunciados para implementar esses módulos.
 
-A implementação não adicionou controle transacional/concorrente às operações que salvam manutenção e odômetro separadamente. A regra de quilometragem foi testada no fluxo sequencial. Antes de uso com múltiplos usuários e dados reais, essas operações devem receber uma estratégia de transação e concorrência.
+Manutenção e atualização do odômetro agora são salvas na mesma transação. O odômetro é atualizado somente em serviços concluídos, com comparação atômica que impede uma leitura menor de sobrescrever uma maior.
 
 A instalação das dependências existentes sinalizou cinco vulnerabilidades (duas altas, três críticas). Não foi aplicada atualização automática com possíveis mudanças incompatíveis. Esse resultado deve ser analisado separadamente com `npm audit`.
 
 As alterações ficam locais até revisão e envio ao GitHub. Não foi feito commit, push ou alteração no banco PostgreSQL pessoal do aluno.
+
+
+## Atualização: demonstração sem servidor PostgreSQL
+
+Para visualizar com facilidade, use `npm.cmd ci` (uma vez após clonar) e `npm.cmd run demo`. O SQLite local é preparado automaticamente e persiste em `.dados/demo.sqlite`, sem senha e sem `.env`. O comando padrão `start:dev` continua utilizando PostgreSQL.
+
+Na apresentação, identifique qual modo está ativo. O rodapé informa o modo de demonstração. Para explicar os conteúdos específicos de PostgreSQL, mostre a configuração e as migrations originais, sem afirmar que SQLite é PostgreSQL.
+
+O teste integrado da demonstração verifica quinze rotas/recursos, CRUD, status, unicidade, bloqueio de exclusão vinculada e persistência após reiniciar. A suíte agora contém 17 testes. O código do modo local é independente dos antigos arquivos temporários de teste do Codex e pode ser clonado normalmente junto do projeto.
+
+
+## Revisão das validações (23/10/2026)
+
+- **Agendar serviço:** permite hoje ou uma data futura, usando o dia de São Paulo. Agendamentos antigos vencidos podem ser corrigidos mantendo sua data original.
+- **Serviço já realizado (histórico):** permite hoje ou datas passadas e salva com status Concluída. Não permite concluir ou iniciar um serviço com data futura, seja pela edição ou pela troca de status.
+- **Status:** só avança de Agendada para Em andamento/Concluída e de Em andamento para Concluída. Serviços concluídos não podem ser reabertos.
+- **Dinheiro:** aceita `100,50`, `100.50`, `1.234,56` e `R$ 100,50`. Rejeita negativos, mais de duas casas, valores acima de R$ 99.999.999,99, hexadecimal e notação científica. `1.234` é ambíguo e é rejeitado; use `1.234,00` para mil duzentos e trinta e quatro reais.
+- **Quilometragem:** aceita somente inteiros entre 0 e 2.147.483.647. Agendamentos guardam a previsão sem alterar o odômetro; a conclusão atualiza o odômetro sem diminuí-lo, na mesma transação.
+- **Placa:** normalizada em maiúsculas e sem hífen; duplicação é bloqueada no cadastro, edição e banco. A própria placa pode ser mantida na edição.
+- **Ano-modelo:** de 1950 até o ano corrente mais um (limite atualizado automaticamente).
+- **Peças e veículo:** identificadores devem ser inteiros válidos e corresponder a registros existentes.
+
+A migration V7 (PostgreSQL) e V2DemoPlacaUnica (SQLite) adicionam o índice de placa. Se já existirem placas duplicadas no banco, a atualização informa quais devem ser revisadas e interrompe sem excluir ou mesclar veículos automaticamente. As migrations antigas foram preservadas.
+
+Verificação: 17 testes automatizados aprovados, incluindo HTTP da demonstração, validações, atualização de um arquivo SQLite da versão anterior e persistência. A integração também foi conferida em PostgreSQL temporário, incluindo as sete migrations, as rotas e o schema. A aparência e os eventos no navegador ainda devem ser conferidos manualmente.
+
+Para visualizar no Windows, dentro da pasta do projeto:
+
+```powershell
+npm.cmd run demo
+```
+
+Abra http://localhost:3000 no seu navegador. Se o servidor já estiver aberto, pare com Ctrl+C antes de iniciar novamente. As mudanças só estarão disponíveis para outras pessoas após commit e push.

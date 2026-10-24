@@ -3,3 +3,6 @@ dist/
 .env
 *.log
 .DS_Store
+
+# Banco pessoal do modo de demonstração
+.dados/

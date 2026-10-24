@@ -287,7 +287,7 @@ npm run migration:revert
 
 ## Segunda prova: cobertura das aulas
 
-A evolução está detalhada em [docs/segunda-prova.md](docs/segunda-prova.md), com os conceitos das aulas 1 a 16, localização no código e roteiro de apresentação.
+A correspondência com os requisitos e sua localização no código estão na seção [Atendimento ao enunciado](#atendimento-ao-enunciado) deste README.
 
 - CRUD de manutenções, veículos e peças, incluindo detalhes e edição.
 - Exclusão de veículos e peças em uso é bloqueada para preservar o histórico.
@@ -309,7 +309,7 @@ npm test
 npm run schema:check
 ```
 
-`npm test` compila e executa testes de validação e regras, sem precisar de banco. `schema:check` usa a conexão do `.env`, sem executar migrations nem alterar dados. Confere tabelas, colunas, tipos, nulabilidade, tamanhos e migrations pendentes; não substitui uma inspeção completa de todas as constraints.
+`npm test` compila e executa validações, regras e integração HTTP com SQLite temporário, sem precisar configurar um servidor de banco. `schema:check` usa a conexão do `.env`, sem executar migrations nem alterar dados. Confere tabelas, colunas, tipos, nulabilidade, tamanhos e migrations pendentes; não substitui uma inspeção completa de todas as constraints.
 
 As migrations compartilhadas V1–V5 foram preservadas. Não use `migration:revert` indiscriminadamente: o down da V5 original remove registros das tabelas.
 
@@ -348,3 +348,47 @@ npm.cmd run demo
 ```
 
 Abra http://localhost:3000 no seu navegador. Se o servidor já estiver aberto, pare com Ctrl+C antes de iniciar novamente. As mudanças só estarão disponíveis para outras pessoas após commit e push.
+
+
+## Atendimento ao enunciado
+
+O professor autorizou substituir Java/Spring por TypeScript neste trabalho. A correspondência abaixo é de responsabilidade e comportamento: NestJS não é Spring Boot, Handlebars não é Thymeleaf e TypeORM não é JPA nem Flyway. São as tecnologias usadas na adaptação autorizada.
+
+| Requisito | Implementação e localização |
+|---|---|
+| Estrutura Spring Boot | Inicialização NestJS em [main.ts](src/main.ts), módulo e injeção em [app.module.ts](src/app.module.ts), dependências em [package.json](package.json). |
+| Controllers, GetMapping, PostMapping, PathVariable | `@Controller`, `@Get`, `@Post`, `@Param('id', ParseIntPipe)` nos Controllers de [manutenções](src/manutencoes/manutencoes.controller.ts), [veículos](src/veiculos/veiculos.controller.ts) e [peças](src/pecas/pecas.controller.ts). |
+| Thymeleaf e static | Handlebars em [views/](views/); CSS, JS e imagens em [public/](public/), servidos pelo backend. |
+| Model e th:text | Objeto retornado com `@Render` ou passado a `resposta.render`; `{{variavel}}` exibe texto escapado. Veja [dashboard.controller.ts](src/dashboard.controller.ts) e [index.hbs](views/index.hbs). |
+| th:each | `{{#each}}` percorre registros na [listagem de manutenções](views/manutencoes/lista.hbs). |
+| th:href | Link com ID real, como `href="/manutencoes/{{this.id}}"`, em [index.hbs](views/index.hbs). |
+| th:action | Formulário POST com rota de cadastro ou ID do registro na [edição](views/manutencoes/editar.hbs). |
+| th:object e th:field | Objeto `manutencao`, campos `name`/`value` e helpers `eq`/`contem` restauram veículo e peças em [campos.hbs](views/partials/campos.hbs). O vínculo é montado explicitamente, sem processador th:field. |
+| Formulários integrados | `@Body` recebe os campos; Controller valida, chama Service e redireciona após gravar. Veja [manutencoes.controller.ts](src/manutencoes/manutencoes.controller.ts). |
+| Cadastro, listagem, detalhes, edição e exclusão | CRUD nas três áreas: [manutenções](views/manutencoes/), [veículos](views/veiculos/) e [peças](views/pecas/). Exclusões por POST; vínculos em uso são protegidos. |
+| JPA e banco | TypeORM e PostgreSQL em [data-source.ts](src/banco/data-source.ts). SQLite persistente é uma alternativa de demonstração. |
+| Entity, Id e GeneratedValue | `@Entity` e `@PrimaryGeneratedColumn` em [Veiculo](src/veiculos/veiculo.entity.ts), [Manutencao](src/manutencoes/manutencao.entity.ts) e [Peca](src/pecas/peca.entity.ts). |
+| JpaRepository | Classes herdam `Repository<Entidade>` do TypeORM; veja [manutencoes.repository.ts](src/manutencoes/manutencoes.repository.ts). |
+| Flyway | [Migrations TypeORM](src/banco/migrations/) versionadas, com histórico, aplicação automática e `synchronize: false`. |
+| Bean Validation | DTOs com class-validator para textos, data, dinheiro e limites; veja [salvar-manutencao.dto.ts](src/manutencoes/dto/salvar-manutencao.dto.ts). |
+| Valid, BindingResult e erros | [validarFormulario](src/comum/validacao.ts) executa validação e retorna `dados`, `erros`, `temErros`; Controller reapresenta os campos com [mensagens](views/partials/campos.hbs). |
+| Service e regra de negócio | [ManutencoesService](src/manutencoes/manutencoes.service.ts) valida datas e avanço do status; [VeiculosService](src/veiculos/veiculos.service.ts) impede placas repetidas e redução do odômetro. |
+| Duas ou mais entidades relacionadas | Três entidades. Manutenção pertence a veículo (`ManyToOne`) e possui peças (`ManyToMany`) em [manutencao.entity.ts](src/manutencoes/manutencao.entity.ts). |
+| Relacionamento persistido | FK `manutencoes.id_veiculo` na [V3](src/banco/migrations/1700000003000-V3AdicionaRelacaoVeiculo.ts); tabela `manutencao_pecas` com duas FKs e chave composta na [V4](src/banco/migrations/1700000004000-V4CriaPecas.ts). |
+| Uso do relacionamento | Formulário seleciona veículo/peças; [detalhes da manutenção](views/manutencoes/detalhes.hbs) mostram os relacionados; [ficha do veículo](views/veiculos/detalhes.hbs) mostra seu histórico. |
+| Controller → Service → Repository → Banco | Controllers recebem Services; Services recebem Repositories, que acessam TypeORM/banco. Registro das dependências em [app.module.ts](src/app.module.ts). |
+| Interface com dados reais | Templates recebem listas, detalhes e totais do banco. HTML/CSS/JS integrados em `views/` e `public/`; veja [dashboard.controller.ts](src/dashboard.controller.ts). |
+| Dupla, repositório e README | Integrantes, descrição e execução constam neste README. Código, templates, recursos, migrations e lockfile estão no projeto para entrega pelo GitHub. |
+
+Os exemplos iniciais são inseridos por migrations no banco e consultados pelas mesmas camadas dos cadastros feitos na tela. Não são valores simulados diretamente no HTML. Publicar o código não transfere os registros locais: cada computador mantém seu banco.
+
+### Como demonstrar os requisitos
+
+1. Cadastre um veículo e uma peça com nomes fáceis de identificar.
+2. Registre uma manutenção escolhendo esse veículo e essa peça. Abra os detalhes: os relacionados devem aparecer.
+3. Abra a ficha do veículo: a manutenção deve aparecer no histórico. Reinicie e mostre a persistência.
+4. Edite a manutenção e confira listagem e detalhes. Exclua um registro de teste; veículos e peças vinculados são protegidos até remover a manutenção.
+5. Tente agendar em data passada ou repetir uma placa. Mostre a mensagem e aponte o DTO, `validarFormulario` e a regra no Service. O backend impede gravação inválida mesmo sem JavaScript do navegador.
+6. Percorra `ManutencoesController` → `ManutencoesService` → `ManutencoesRepository`, depois a entidade, migrations V3/V4 e template com campos e erros.
+
+O [teste integrado](tests/demo.test.cjs) verifica por HTTP CRUD, exibição dos relacionamentos, validações, bloqueios de exclusão e persistência após reiniciar. A aparência e os eventos no navegador exigem conferência manual; o teste HTTP não comprova preservação visual em relação ao protótipo original.

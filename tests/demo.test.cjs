@@ -80,6 +80,15 @@ test('demo funciona sem PostgreSQL: CRUD, integridade, recursos e persistência'
     assert.equal(consultar(`SELECT status FROM manutencoes WHERE id = ${manutencao}`)[0][0], 'Agendada');
     assert.equal(consultar(`SELECT count(*) FROM manutencao_pecas WHERE id_manutencao = ${manutencao}`)[0][0], 2);
     assert.equal(consultar(`SELECT km_atual FROM veiculos WHERE id = ${veiculo}`)[0][0], 100);
+    // Os relacionamentos persistidos também devem aparecer nas páginas.
+    const detalhes = (await pedir(`/manutencoes/${manutencao}`)).texto;
+    assert.match(detalhes, /Veículo demo teste/);
+    assert.match(detalhes, /Peça demo teste/);
+    const historicoVeiculo = (await pedir(`/veiculos/${veiculo}`)).texto;
+    assert.match(historicoVeiculo, /Serviço demo teste/);
+    assert.ok(historicoVeiculo.includes(`/manutencoes/${manutencao}`));
+    assert.match((await pedir('/')).texto, /Serviço demo teste/);
+
     assert.equal((await pedir(`/veiculos/${veiculo}/excluir`, {})).status, 302);
     assert.match((await pedir('/veiculos')).texto, /manutenções vinculadas/);
     assert.equal((await pedir(`/pecas/${peca}/excluir`, {})).status, 302);
@@ -144,6 +153,8 @@ test('demo funciona sem PostgreSQL: CRUD, integridade, recursos e persistência'
     await iniciar();
     assert.equal(consultar('SELECT count(*) FROM migrations')[0][0], 2);
     assert.match((await pedir(`/manutencoes/${manutencao}`)).texto, /Serviço demo editado/);
+    assert.match((await pedir(`/manutencoes/${manutencao}`)).texto, /Peça demo teste/);
+    assert.match((await pedir(`/veiculos/${veiculo}`)).texto, /Serviço demo editado/);
     await pedir(`/manutencoes/${manutencao}/excluir`, {});
     assert.equal(consultar(`SELECT count(*) FROM manutencao_pecas WHERE id_manutencao = ${manutencao}`)[0][0], 0);
     assert.equal(consultar(`SELECT count(*) FROM pecas WHERE id = ${peca}`)[0][0], 1);
